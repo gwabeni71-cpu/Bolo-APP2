@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes, viewport-fit=cover">
+  <title>BOLO HUB | Giyani TV + Mzukwane TV + Bolobedu TV</title>
+  <!-- Monetag zone (kept for support, no pop-ups) -->
+  <script>(function(s){s.dataset.zone='11152512',s.src='https://nap5k.com/tag.min.js'})([document.documentElement,document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+  <style>
+    /* === all styles from original, kept intact === */
+    :root{--gold:#FFD700;--bg:#0b0b0b;--card-bg:#1a1a1a;--glass:rgba(255,255,255,.05);--accent:#ffae00;--giyani-green:#00ff66}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:#fff;font-family:'Segoe UI',Roboto,'Helvetica Neue',sans-serif;padding-bottom:80px;overflow-x:hidden}
+    body.theater-mode-active{background:#020202}
+    body.theater-mode-active .header,body.theater-mode-active .genre-nav-bar,body.theater-mode-active .premium-shelf,body.theater-mode-active .grid,body.theater-mode-active .hub-disclaimer{opacity:.15;pointer-events:none;transition:opacity .4s}
+    
+    .header{position:sticky;top:0;z-index:1000;text-align:center;padding:8px 10px;background:rgba(11,11,11,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--gold)}
+    h1{margin:0;font-size:clamp(14px,3.5vw,18px);color:var(--gold);letter-spacing:2px;text-transform:uppercase;font-weight:900}
+    
+    .video-wrapper:fullscreen,.video-wrapper:-webkit-full-screen{position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;margin:0!important;background:#000;display:flex;flex-direction:column;justify-content:center}
+    .video-wrapper:fullscreen .video-container,.video-wrapper:-webkit-full-screen .video-container{flex:1;padding-bottom:0;height:auto}
+    .video-wrapper{width:100%;background:#000;margin-top:0;margin-bottom:0;position:relative;z-index:999;box-shadow:0 5px 15px rgba(0,0,0,.8)}
+    .video-wrapper:fullscreen,.video-wrapper:-webkit-full-screen{margin:0!important;position:fixed!important;top:0!important;left:0!important}
+    .video-container{position:relative;width:100%;padding-bottom:56.25%;height:0;background:#111;overflow:hidden}
+    #main-player{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+    .player-shield{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;background:0 0;cursor:default}
+    .video-background-blocker{position:absolute;top:0;left:0;width:100%;height:100%;background:#000;z-index:8;opacity:0;visibility:hidden;transition:opacity .4s;pointer-events:none}
+    .video-background-blocker.blocker-active{opacity:1;visibility:visible}
+    .corner-logo{position:absolute;top:0;right:0;width:50px;height:50px;z-index:14;background:0 0;border:2px solid var(--gold);border-radius:8px;padding:0;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .2s;box-shadow:0 0 8px rgba(255,215,0,.3)}
+    .corner-logo img{width:100%;height:100%;object-fit:contain;display:block;border-radius:6px}
+    .corner-logo.visible-for-bolobedu{opacity:1;visibility:visible}
+    .app-video-loader{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.2);z-index:11;display:flex;flex-direction:column;justify-content:center;align-items:center;pointer-events:none;opacity:1;transition:opacity .4s}
+    .app-video-loader.hide-loader{opacity:0;pointer-events:none}
+    .cinematic-plate{text-align:center;padding:12px 20px;background:rgba(8,8,12,.82);backdrop-filter:blur(14px);border-radius:12px;max-width:85%;width:320px;border:1px solid rgba(212,175,55,.3);position:relative}
+    .cinematic-plate::before{content:'';position:absolute;inset:0;border:1px solid rgba(212,175,55,.5);border-radius:12px;animation:platePulse 2.4s infinite alternate;pointer-events:none}
+    .cinema-brand-title{color:#f5e7c8;font-size:15px;letter-spacing:2.5px;margin:0 0 4px;text-transform:uppercase}
+    .broadcast-ticker{color:#d4af37;font-size:9px;letter-spacing:1.8px;display:flex;align-items:center;gap:6px;justify-content:center}
+    .broadcast-dot{width:5px;height:5px;background:#e5b83c;border-radius:50%;animation:beaconBlink .9s infinite alternate}
+    @keyframes platePulse{0%{border-color:rgba(212,175,55,.3);box-shadow:0 0 4px rgba(212,175,55,.05)}to{border-color:rgba(212,175,55,.75);box-shadow:0 0 18px rgba(212,175,55,.25)}}
+    @keyframes beaconBlink{0%{opacity:.35;transform:scale(.9)}to{opacity:1;transform:scale(1.2)}}
+    .custom-controls{position:absolute;bottom:0;left:0;width:100%;background:linear-gradient(to top,rgba(0,0,0,1) 0,rgba(0,0,0,.85) 80%,transparent);backdrop-filter:blur(15px);display:flex;justify-content:center;padding:10px;z-index:12;transition:transform .4s,opacity .4s;opacity:1;transform:translateY(0);pointer-events:auto}
+    .custom-controls.hide-controls{transform:translateY(100%)!important;opacity:0!important;pointer-events:none!important}
+    .control-btn{background:0;border:0;fill:#fff;cursor:pointer;transition:.2s;padding:0}
+    .control-btn.play-btn{width:36px;height:36px;fill:#000;background:var(--gold);border-radius:50%;padding:8px;filter:drop-shadow(0 0 6px rgba(255,215,0,.5))}
+    .control-btn:hover{transform:scale(1.1);fill:var(--gold)}
+    .control-btn svg{width:100%;height:100%;display:block}
+
+    .live-ticker{width:100%;background:#101015;border-top:2px solid var(--gold);border-bottom:1px solid #1a1a24;height:36px;overflow:hidden;font-size:11px;font-weight:700;letter-spacing:1px;color:#fff;text-transform:uppercase;font-family:'Segoe UI',Roboto,sans-serif;pointer-events:none;transition:all .3s;display:none;box-shadow:0 -4px 20px rgba(0,0,0,.6);position:relative}
+    .live-ticker.visible-for-bolobedu{display:flex;align-items:stretch}
+    .ticker-badge{background:#e11d48;color:#fff;display:flex;align-items:center;gap:6px;padding:0 14px;font-weight:900;letter-spacing:1.5px;position:relative;z-index:5;box-shadow:4px 0 10px rgba(0,0,0,0.4);flex-shrink:0}
+    .ticker-badge-dot{width:6px;height:6px;background:#fff;border-radius:50%;animation:beaconBlink .8s infinite alternate}
+    .ticker-wrap{flex:1;overflow:hidden;display:flex;align-items:center;position:relative}
+    .ticker-content{display:inline-block;white-space:nowrap;padding-left:20px;animation:scrollTicker 32s linear infinite;line-height:36px}
+    .ticker-logo{display:inline-block;width:18px;height:18px;vertical-align:middle;margin:-2px 8px 0;border-radius:50%;border:1px solid var(--gold);overflow:hidden;background:#000;box-shadow:0 0 6px rgba(255,215,0,.4)}
+    .ticker-logo img{width:100%;height:100%;object-fit:cover;display:block}
+    .ticker-divider{color:var(--gold);margin:0 12px;font-weight:400}
+    @keyframes scrollTicker{0%{transform:translate3d(0,0,0)}to{transform:translate3d(-100%,0,0)}}
+
+    .status-bar{padding:6px 8px;background:#111;border-bottom:1px solid #222;display:flex;flex-direction:column;gap:4px}
+    .status-controls{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:100%}
+    .status-controls button{padding:6px 4px;font-size:8px;font-weight:700;border-radius:6px;cursor:pointer;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:4px;background:#222;border:1px solid var(--glass);color:#ccc;transition:.2s;touch-action:manipulation}
+    .fs-toggle-btn{border-color:var(--gold);color:var(--gold)}
+    .ds-toggle-btn{border-color:#00ff66;color:#00ff66}
+    .ds-toggle-btn.ds-on{background:#00ff66;color:#000}
+    .tm-toggle-btn{border-color:#00bcff;color:#00bcff}
+    .tm-toggle-btn.tm-on{background:#00bcff;color:#000}
+    .status-controls button:active{transform:scale(.97)}
+
+    .timer-zone{display:flex;align-items:center;justify-content:space-between;background:#1a1a1a;border-radius:8px;padding:6px 12px;margin:4px 0 0;border:1px solid rgba(255,215,0,.15)}
+    .timer-zone .time-display{font-size:13px;font-weight:800;color:var(--gold);letter-spacing:1px}
+    .timer-zone .ad-btn{background:var(--gold);color:#000;border:none;padding:5px 14px;border-radius:20px;font-weight:700;font-size:9px;text-transform:uppercase;cursor:pointer;transition:.2s;box-shadow:0 0 15px rgba(255,215,0,.15)}
+    .timer-zone .ad-btn:active{transform:scale(.95)}
+    .timer-zone .ad-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+    .timer-zone .ad-label{font-size:8px;color:#888;font-weight:300}
+
+    .genre-nav-bar{display:flex;overflow-x:auto;gap:4px;padding:8px 8px 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .genre-nav-bar::-webkit-scrollbar{display:none}
+    .genre-filter-btn{flex:0 0 auto;background:rgba(255,255,255,.02);border:1px solid rgba(255,215,0,.15);color:#aaa;padding:4px 8px;border-radius:20px;cursor:pointer;font-size:8px;font-weight:700;text-transform:uppercase;transition:.2s;touch-action:manipulation;white-space:nowrap}
+    .genre-filter-btn.active{background:rgba(255,215,0,.1);border-color:var(--gold);color:var(--gold)}
+
+    .channel-bar{display:flex;overflow-x:auto;gap:6px;padding:4px 8px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .channel-bar::-webkit-scrollbar{display:none}
+    .chan-btn{position:relative;flex:0 0 auto;background:var(--card-bg);border:1px solid var(--glass);color:#ccc;padding:4px 20px 4px 8px;border-radius:6px;cursor:pointer;font-size:8px;font-weight:700;text-transform:uppercase;transition:.3s;display:none;touch-action:manipulation;white-space:nowrap}
+    .chan-btn.active{background:var(--gold);color:#000;border-color:var(--gold)}
+    .chan-btn.visible-channel{display:block}
+    .fav-star{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:8px;color:rgba(255,255,255,.3)}
+    .chan-btn.active .fav-star{color:rgba(0,0,0,.5)}
+    .chan-btn.is-favorite .fav-star{color:var(--accent)!important}
+
+    .section-title{padding:12px 8px 4px;font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:0 8px 12px}
+    .card{background:var(--card-bg);border-radius:8px;padding:10px 4px;text-align:center;border:1px solid var(--glass);cursor:pointer;transition:transform .1s;touch-action:manipulation}
+    .card:active{transform:scale(.97)}
+    .card span{font-size:18px;display:inline-block;margin-bottom:2px}
+    .card .card-title{font-size:10px;font-weight:700;margin:0}
+    .card .card-sub{font-size:8px;color:#888;margin-top:2px}
+    .card-anchor{text-decoration:none;display:block}
+    .card-anchor .card{border:1px solid var(--gold);background:rgba(255,215,0,.04)}
+
+    #status-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;padding:6px 14px;border-radius:30px;font-size:10px;font-weight:700;display:none;z-index:1000;white-space:nowrap}
+
+    .hub-disclaimer{margin:16px 8px;padding:10px;background:rgba(15,15,15,.6);border:1px dashed rgba(255,215,0,.25);border-radius:8px;font-size:8px;color:#777;text-align:justify}
+
+    .next-banner{position:absolute;bottom:60px;right:10px;background:rgba(0,0,0,.9);backdrop-filter:blur(8px);border-left:4px solid var(--gold);padding:6px 12px;border-radius:6px;font-size:10px;font-weight:700;color:#fff;z-index:15;transition:opacity .3s;pointer-events:none;max-width:80%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 0 12px rgba(0,0,0,.5);font-family:'Segoe UI',system-ui,sans-serif;opacity:0;visibility:hidden}
+    .next-banner span{color:var(--gold);margin-right:6px;font-weight:900}
+
+    /* Giyani TV custom brand loader styles - stylish green theme */
+    .brand-loader.giyani-loader {
+      background: radial-gradient(circle at 50% 50%, #0d2a1a 0%, #051a0d 60%, #000 100%) !important;
+    }
+    .brand-loader.giyani-loader::before {
+      background-image: radial-gradient(rgba(0,255,100,.05) 2px, transparent 40px),
+                       linear-gradient(45deg, transparent 48%, rgba(0,255,100,.03) 50%, transparent 52%) !important;
+    }
+    .brand-loader.giyani-loader .broadcast-visual-rings {
+      border-color: rgba(0,255,100,.08) !important;
+      animation: ringExpandGreen 4s infinite linear;
+    }
+    .brand-loader.giyani-loader .broadcast-visual-rings::before {
+      border-color: rgba(0,255,100,.05) !important;
+    }
+    .brand-loader.giyani-loader .linear-station-bar::after {
+      background: linear-gradient(90deg, transparent, #00ff66, transparent) !important;
+    }
+    .brand-loader.giyani-loader .loader-text {
+      color: #00ff66 !important;
+      text-shadow: 0 0 20px rgba(0,255,100,.6) !important;
+      animation: textGlowGreen 1.5s infinite alternate;
+    }
+    .brand-loader.giyani-loader .brand-logo {
+      animation: professionalPulseGreen 3s ease-in-out infinite;
+      border-radius: 16px;
+      box-shadow: 0 0 40px rgba(0,255,100,.15), 0 0 80px rgba(0,255,100,.05);
+    }
+
+    @keyframes ringExpandGreen {
+      0% { transform: scale(.5); opacity: 0; }
+      50% { opacity: .6; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+    @keyframes textGlowGreen {
+      0% { opacity: .7; letter-spacing: 3px; text-shadow: 0 0 10px rgba(0,255,100,.2); }
+      100% { opacity: 1; letter-spacing: 4px; text-shadow: 0 0 30px rgba(0,255,100,.6), 0 0 60px rgba(0,255,100,.2); }
+    }
+    @keyframes professionalPulseGreen {
+      0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0,255,100,.2)); }
+      50% { transform: scale(1.04); filter: drop-shadow(0 0 30px rgba(0,255,100,.5)); }
+      100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0,255,100,.2)); }
+    }
+
+    .brand-loader{position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 50%,#151324 0%,#07060d 70%,#000 100%);z-index:20;display:flex;flex-direction:column;justify-content:center;align-items:center;opacity:0;visibility:hidden;transition:opacity .25s;pointer-events:none;overflow:hidden}
+    .brand-loader::before{content:'';position:absolute;width:200%;height:200%;background-image:radial-gradient(rgba(255,215,0,.03) 2px,transparent 40px),linear-gradient(45deg,transparent 48%,rgba(255,215,0,.02) 50%,transparent 52%);background-size:30px 30px,300px 300px;animation:tvStudioMotion 25s linear infinite;z-index:1}
+    .broadcast-visual-rings{position:absolute;width:450px;height:450px;border:1px solid rgba(255,215,0,.06);border-radius:50%;z-index:2;animation:ringExpand 4s infinite linear}
+    .broadcast-visual-rings::before{content:'';position:absolute;inset:30px;border:1px dashed rgba(255,215,0,.04);border-radius:50%;animation:spinCounter 12s infinite linear}
+    .brand-logo-container{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .brand-logo{max-width:140px;max-height:140px;object-fit:contain;animation:professionalPulse 3s ease-in-out infinite}
+    .linear-station-bar{width:160px;height:2px;background:rgba(255,255,255,.08);margin-top:20px;border-radius:2px;overflow:hidden;position:relative}
+    .linear-station-bar::after{content:'';position:absolute;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,var(--gold),transparent);animation:sweepStream 1.8s infinite ease-in-out}
+    .loader-text{margin-top:15px;font-size:10px;letter-spacing:3px;color:#fff;font-weight:700;text-transform:uppercase;text-shadow:0 0 10px rgba(255,215,0,.4);animation:textGlow 1.5s infinite alternate}
+    @keyframes tvStudioMotion{0%{transform:translate(0,0) rotate(0)}to{transform:translate(-50px,-50px) rotate(360deg)}}
+    @keyframes ringExpand{0%{transform:scale(.6);opacity:0}50%{opacity:1}to{transform:scale(1.3);opacity:0}}
+    @keyframes spinCounter{0%{transform:rotate(360deg)}to{transform:rotate(0)}}
+    @keyframes professionalPulse{0%{transform:scale(1);filter:drop-shadow(0 0 10px rgba(255,215,0,.2))}50%{transform:scale(1.03);filter:drop-shadow(0 0 25px rgba(255,215,0,.5))}to{transform:scale(1);filter:drop-shadow(0 0 10px rgba(255,215,0,.2))}}
+    @keyframes sweepStream{0%{left:-100%}to{left:100%}}
+    @keyframes textGlow{0%{opacity:.7;letter-spacing:3px}to{opacity:1;letter-spacing:3.5px}}
+
+    .credits-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(to top,#000 0,#0a0a0a 50%,#000 100%);z-index:18;opacity:0;visibility:hidden;transition:opacity .6s;pointer-events:none;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;overflow:hidden;padding-top:15px}
+    .credits-overlay.show-credits{opacity:1;visibility:visible}
+    .credits-scroll-container{width:90%;text-align:center;transform:translateY(100px);animation:scrollCreditsUp 9.5s linear forwards}
+    .sister-company-title{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:2px;margin-bottom:2px;font-weight:600}
+    .sister-company-name{font-size:13px;color:var(--gold);text-transform:uppercase;letter-spacing:3px;font-weight:900;margin-bottom:15px;text-shadow:0 0 8px rgba(255,215,0,.3)}
+    .credits-divider{width:30px;height:1px;background:rgba(255,215,0,.4);margin:0 auto 10px}
+    .credit-row{margin-bottom:8px;display:flex;flex-direction:column;gap:2px}
+    .credit-role{font-size:8px;color:#777;text-transform:uppercase;letter-spacing:1.5px;font-weight:700}
+    .credit-name{font-size:10px;color:#eee;letter-spacing:1px;font-weight:500}
+    @keyframes scrollCreditsUp{0%{transform:translateY(80px)}to{transform:translateY(-40px)}}
+
+    /* ===== BOTTOM BANNER AD ===== */
+    .bottom-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 30000;
+      background: linear-gradient(180deg, rgba(0,0,0,0.92), #0a0a0a);
+      border-top: 2px solid #ffcc00;
+      padding: 6px 10px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: 0 -8px 30px rgba(0,0,0,0.8);
+      backdrop-filter: blur(12px);
+      transition: transform 0.3s ease;
+    }
+    .bottom-banner.hidden { transform: translateY(100%); }
+    .bottom-banner .banner-content {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+      cursor: pointer;
+    }
+    .bottom-banner .banner-icon { font-size: 24px; flex-shrink: 0; animation: pulseIcon 2s infinite; }
+    @keyframes pulseIcon { 0%,100%{transform:scale(1)}50%{transform:scale(1.1)} }
+    .bottom-banner .banner-text { flex:1; min-width:0; }
+    .bottom-banner .banner-text .title {
+      font-size: 11px; font-weight: 800; color: #ffcc00; letter-spacing: 0.3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .bottom-banner .banner-text .desc {
+      font-size: 9px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .bottom-banner .banner-cta {
+      background: linear-gradient(135deg, #ffcc00, #f5a623);
+      color: #000; border: 0; padding: 6px 16px; border-radius: 30px;
+      font-weight: 800; font-size: 10px; text-transform: uppercase;
+      cursor: pointer; flex-shrink: 0; transition: all 0.2s; letter-spacing: 0.5px;
+      touch-action: manipulation;
+    }
+    .bottom-banner .banner-cta:active { transform: scale(0.94); }
+    .bottom-banner .banner-close {
+      background: none; border: 0; color: #666; font-size: 16px; cursor: pointer;
+      padding: 0 4px; flex-shrink: 0; transition: color 0.2s;
+    }
+    .bottom-banner .banner-close:hover { color: #fff; }
+    @media (max-width: 480px) {
+      .bottom-banner .banner-icon { font-size: 18px; }
+      .bottom-banner .banner-text .title { font-size: 9px; }
+      .bottom-banner .banner-text .desc { font-size: 7px; }
+      .bottom-banner .banner-cta { font-size: 8px; padding: 4px 10px; }
+    }
+
+    @media(max-width:480px){.video-wrapper{margin-top:0}.corner-logo{width:40px;height:40px}.brand-logo{max-width:100px;max-height:100px}.broadcast-visual-rings{width:300px;height:300px}.broadcast-visual-rings::before{inset:20px}.status-controls button{font-size:7px;padding:4px 2px}.chan-btn{font-size:7px;padding:3px 16px 3px 6px}.grid{grid-template-columns:1fr 1fr;gap:6px}.card{padding:8px 2px}.card span{font-size:16px}.card .card-title{font-size:9px}.genre-filter-btn{font-size:7px;padding:3px 6px}.status-bar{padding:4px 6px}.live-ticker{height:32px;font-size:9px}.ticker-badge{padding:0 10px;font-size:9px;gap:4px}.ticker-content{line-height:32px}.ticker-logo{width:14px;height:14px;margin:-2px 6px 0}.next-banner{bottom:50px;font-size:8px;padding:4px 8px;max-width:90%}.cinematic-plate{width:90%;padding:10px 14px}.cinema-brand-title{font-size:13px}.broadcast-ticker{font-size:8px}}
+  </style>
+</head>
+<body>
+
+<div class="header"><h1>LIVE TV & MEDIA HUB</h1></div>
+
+<div class="video-wrapper" id="fullscreen-target">
+  <div class="video-container">
+    <div id="main-player"></div>
+    <div class="player-shield"></div>
+    <div id="videoBackgroundBlocker" class="video-background-blocker"></div>
+    <div id="cornerLogo" class="corner-logo">
+      <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjL4eOM9RtNpOv1gE_yX9T9y2h7jWSOxoCu-XZ0V8et2lWYwtFjMI2Gl_eIUp4WO82JbSttoMO56_-KzA0tfYzfY_p7AbQIwijISzVtA8b085fc4n4enwjiHEM3peSshrA2IVB1TRXN7ojEG5rjuFz6Wnydxy1Qw2YKCTMhPaSDOyHtG-ryQj-tluFCAGDf/s516/65816.jpg" alt="Giyani TV Logo" loading="lazy">
+    </div>
+    <div class="app-video-loader" id="appVideoLoader">
+      <div class="cinematic-plate">
+        <h2 class="cinema-brand-title">BOLO LIVE TV</h2>
+        <div class="broadcast-ticker">
+          <span class="broadcast-dot"></span>
+          <span id="loaderStatusText">LINEAR BROADCAST</span>
+        </div>
+      </div>
+    </div>
+    <div id="nextBanner" class="next-banner">
+      <span>📺 NEXT ON BOLO TV</span> <span id="nextTitle">Loading...</span>
+    </div>
+
+    <div id="brandLoader" class="brand-loader">
+      <div class="broadcast-visual-rings"></div>
+      <div class="brand-logo-container">
+        <img class="brand-logo" id="brandLogoImg" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjL4eOM9RtNpOv1gE_yX9T9y2h7jWSOxoCu-XZ0V8et2lWYwtFjMI2Gl_eIUp4WO82JbSttoMO56_-KzA0tfYzfY_p7AbQIwijISzVtA8b085fc4n4enwjiHEM3peSshrA2IVB1TRXN7ojEG5rjuFz6Wnydxy1Qw2YKCTMhPaSDOyHtG-ryQj-tluFCAGDf/s516/65816.jpg" alt="Channel Logo" loading="lazy" onerror="this.style.display='none';document.querySelector('.loader-text').innerText='CHANNEL';">
+        <div class="loader-text" id="brandLoaderText">GIYANI TV NETWORK</div>
+        <div class="linear-station-bar"></div>
+      </div>
+    </div>
+
+    <div id="creditsOverlay" class="credits-overlay">
+      <div class="credits-scroll-container">
+        <div class="sister-company-title">In Association With</div>
+        <div class="sister-company-name">Kutullo Angel Media</div>
+        <div class="credits-divider"></div>
+        <div class="credit-row"><div class="credit-role">Executive Producer</div><div class="credit-name">K. Mathibela</div></div>
+        <div class="credit-row"><div class="credit-role">Director of Broadcasting</div><div class="credit-name">Thabo Mokoena</div></div>
+        <div class="credit-row"><div class="credit-role">Lead Editor & Graphics</div><div class="credit-name">Lerato Ndlovu</div></div>
+        <div class="credit-row"><div class="credit-role">Technical Operations</div><div class="credit-name">Sipho Sithole</div></div>
+        <div class="credit-row"><div class="credit-role">Content Coordinator</div><div class="credit-name">Mbali Khumalo</div></div>
+      </div>
+    </div>
+
+    <div class="custom-controls" id="customControls">
+      <button class="control-btn play-btn" onclick="togglePlayPause()" id="playPauseBtn">
+        <svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="live-ticker" id="liveTicker">
+    <div class="ticker-badge"><span class="ticker-badge-dot"></span>LIVE</div>
+    <div class="ticker-wrap">
+      <div class="ticker-content" id="tickerText">
+        <span class="ticker-logo"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjL4eOM9RtNpOv1gE_yX9T9y2h7jWSOxoCu-XZ0V8et2lWYwtFjMI2Gl_eIUp4WO82JbSttoMO56_-KzA0tfYzfY_p7AbQIwijISzVtA8b085fc4n4enwjiHEM3peSshrA2IVB1TRXN7ojEG5rjuFz6Wnydxy1Qw2YKCTMhPaSDOyHtG-ryQj-tluFCAGDf/s516/65816.jpg" alt="" loading="lazy"></span>
+        GIYANI TV <span class="ticker-divider">•</span> 24/7 LINEAR NETWORK <span class="ticker-divider">•</span> STAY TUNED <span class="ticker-divider">•</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-controls">
+      <button class="ds-toggle-btn" id="ds-button" onclick="toggleDataSaver()"><span>🌐</span> DATA SAVER: OFF</button>
+      <button class="tm-toggle-btn" id="tm-button" onclick="toggleTheaterMode()"><span>🕶️</span> CINEMA MODE</button>
+      <button class="fs-toggle-btn" onclick="toggleFullscreen()"><span>🔳</span> FULLSCREEN</button>
+    </div>
+    <div class="timer-zone">
+      <span class="time-display" id="sessionTimerDisplay">⏳ 10:00</span>
+      <span style="font-size:8px;color:#888;font-weight:300;">remaining</span>
+      <button class="ad-btn" id="adWatchBtn" onclick="watchAdsForTime()">🎬 WATCH 3 ADS +1HR</button>
+    </div>
+  </div>
+</div>
+
+<div class="genre-nav-bar">
+  <button class="genre-filter-btn active" onclick="filterGenre('all', this)">ALL FEEDS</button>
+  <button class="genre-filter-btn" id="fav-filter-tab" onclick="filterGenre('favorites', this)">⭐ MY SHOWCASE</button>
+  <button class="genre-filter-btn" onclick="filterGenre('news', this)">NEWS</button>
+  <button class="genre-filter-btn" onclick="filterGenre('entertainment', this)">ENTERTAINMENT</button>
+  <button class="genre-filter-btn" onclick="filterGenre('comedy', this)">COMEDY</button>
+  <button class="genre-filter-btn" onclick="filterGenre('kids', this)">KIDS</button>
+  <button class="genre-filter-btn" onclick="filterGenre('music', this)">MUSIC</button>
+  <button class="genre-filter-btn" onclick="filterGenre('faith', this)">FAITH</button>
+  <button class="genre-filter-btn" onclick="filterGenre('wildlife', this)">WILDLIFE</button>
+</div>
+
+<div class="channel-bar" id="channelBarContainer">
+  <!-- THREE LINEAR CHANNELS: Giyani TV, Mzukwane TV, Bolobedu TV -->
+  <div class="chan-btn active visible-channel" data-id="giyani" data-genre="all" onclick="switchToGiyani()">📡 GIYANI TV <span class="fav-star" onclick="toggleFavorite('giyani', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="mzukwane" data-genre="all" onclick="switchToMzukwane()">📡 MZUKWANE 24/7 <span class="fav-star" onclick="toggleFavorite('mzukwane', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="bolobedu" data-genre="all" onclick="switchToBolobedu()">📡 BOLOBEDU TV <span class="fav-star" onclick="toggleFavorite('bolobedu', event)">★</span></div>
+  
+  <!-- external channels (unchanged) -->
+  <div class="chan-btn visible-channel" data-id="gCNeDWCI0vo" data-genre="news" onclick="playExternal('gCNeDWCI0vo', this)">AL JAZEERA <span class="fav-star" onclick="toggleFavorite('gCNeDWCI0vo', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="iEpJwprxDdk" data-genre="news" onclick="playExternal('iEpJwprxDdk', this)">BLOOMBERG BIZ <span class="fav-star" onclick="toggleFavorite('iEpJwprxDdk', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="kkaNEkKWf08" data-genre="news" onclick="playExternal('kkaNEkKWf08', this)">NEWS CENTRAL <span class="fav-star" onclick="toggleFavorite('kkaNEkKWf08', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="YDvsBbKfLPA" data-genre="news" onclick="playExternal('YDvsBbKfLPA', this)">SKY NEWS <span class="fav-star" onclick="toggleFavorite('YDvsBbKfLPA', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="W8nThq62Vb4" data-genre="news" onclick="playExternal('W8nThq62Vb4', this)">CHANNELS TV <span class="fav-star" onclick="toggleFavorite('W8nThq62Vb4', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="NQjabLGdP5g" data-genre="news" onclick="playExternal('NQjabLGdP5g', this)">AFRICANEWS <span class="fav-star" onclick="toggleFavorite('NQjabLGdP5g', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="12ds6A7EflA" data-genre="entertainment" onclick="playExternal('12ds6A7EflA', this)">CHANNEL ONE <span class="fav-star" onclick="toggleFavorite('12ds6A7EflA', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="iAdKBEwfWQU" data-genre="entertainment" onclick="playExternal('iAdKBEwfWQU', this)">FAMILY FEUD SA <span class="fav-star" onclick="toggleFavorite('iAdKBEwfWQU', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="qx2M5qnxKj4" data-genre="entertainment" onclick="playExternal('qx2M5qnxKj4', this)">DEAL OR NO DEAL <span class="fav-star" onclick="toggleFavorite('qx2M5qnxKj4', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="LAp2LBVXDQo" data-genre="entertainment" onclick="playExternal('LAp2LBVXDQo', this)">THE OFFICE <span class="fav-star" onclick="toggleFavorite('LAp2LBVXDQo', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="s1Ylmj87gXY" data-genre="comedy" onclick="playExternal('s1Ylmj87gXY', this)">DISNEY COMEDY <span class="fav-star" onclick="toggleFavorite('s1Ylmj87gXY', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="vRCSX42k0og" data-genre="kids" onclick="playExternal('vRCSX42k0og', this)">PBS KIDS <span class="fav-star" onclick="toggleFavorite('vRCSX42k0og', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="AYyhsqA8a4w" data-genre="kids" onclick="playExternal('AYyhsqA8a4w', this)">PINKFONG <span class="fav-star" onclick="toggleFavorite('AYyhsqA8a4w', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="F4Tnje7wi-o" data-genre="kids" onclick="playExternal('F4Tnje7wi-o', this)">DISNEY KIDS <span class="fav-star" onclick="toggleFavorite('F4Tnje7wi-o', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="HwO6nKvxDrY" data-genre="kids" onclick="playExternal('HwO6nKvxDrY', this)">BABY SHARK <span class="fav-star" onclick="toggleFavorite('HwO6nKvxDrY', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="6a23sxk5_vM" data-genre="kids" onclick="playExternal('6a23sxk5_vM', this)">BOOMERANG <span class="fav-star" onclick="toggleFavorite('6a23sxk5_vM', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="E2vONfzoyRI" data-genre="music" onclick="playExternal('E2vONfzoyRI', this)">JAZZ LO-FI <span class="fav-star" onclick="toggleFavorite('E2vONfzoyRI', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="XbSFSVxuu40" data-genre="music" onclick="playExternal('XbSFSVxuu40', this)">CHILLHOP <span class="fav-star" onclick="toggleFavorite('XbSFSVxuu40', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="Zh1_tKjvOOI" data-genre="music" onclick="playExternal('Zh1_tKjvOOI', this)">DYNAMIC SOUNDS <span class="fav-star" onclick="toggleFavorite('Zh1_tKjvOOI', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="r7eFY9YYTdE" data-genre="music" onclick="playExternal('r7eFY9YYTdE', this)">DARK CITY <span class="fav-star" onclick="toggleFavorite('r7eFY9YYTdE', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="36YnV9STBqc" data-genre="music" onclick="playExternal('36YnV9STBqc', this)">THE GOOD LIFE <span class="fav-star" onclick="toggleFavorite('36YnV9STBqc', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="x-JC7sJJUW8" data-genre="music" onclick="playExternal('x-JC7sJJUW8', this)">RADIO POP <span class="fav-star" onclick="toggleFavorite('x-JC7sJJUW8', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="puUHK7ahyLo" data-genre="faith" onclick="playExternal('puUHK7ahyLo', this)">VICTORY CHANNEL <span class="fav-star" onclick="toggleFavorite('puUHK7ahyLo', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="_QqFhkOcljI" data-genre="faith" onclick="playExternal('_QqFhkOcljI', this)">GOSPEL TV <span class="fav-star" onclick="toggleFavorite('_QqFhkOcljI', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="ydYDqZQpim8" data-genre="wildlife" onclick="playExternal('ydYDqZQpim8', this)">WILDEARTH <span class="fav-star" onclick="toggleFavorite('ydYDqZQpim8', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="XsOU8JnEpNM" data-genre="wildlife" onclick="playExternal('XsOU8JnEpNM', this)">NATURE STREAM <span class="fav-star" onclick="toggleFavorite('XsOU8JnEpNM', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="wVd836vHl6s" data-genre="wildlife" onclick="playExternal('wVd836vHl6s', this)">NAT GEO <span class="fav-star" onclick="toggleFavorite('wVd836vHl6s', event)">★</span></div>
+  <div class="chan-btn visible-channel" data-id="1LhlXiSc5NY" data-genre="wildlife" onclick="playExternal('1LhlXiSc5NY', this)">BBC EARTH <span class="fav-star" onclick="toggleFavorite('1LhlXiSc5NY', event)">★</span></div>
+</div>
+
+<div class="section-title">💎 PREMIUM FEATURED PLATFORMS</div>
+<div style="padding:0 8px;">
+  <div class="card" style="background:rgba(0,255,100,.12);border:2px solid #00ff66;margin-bottom:8px;box-shadow:0 0 30px rgba(0,255,100,.1);" onclick="switchToGiyani()">
+    <span>📡</span><div class="card-title" style="color:#00ff66;">GIYANI TV</div><div class="card-sub" style="color:#88dd88;">24/7 Linear Channel • Giyani Vibes</div>
+  </div>
+  <div class="card" style="background:rgba(255,215,0,.1);border:2px solid var(--gold);margin-bottom:8px;" onclick="switchToMzukwane()">
+    <span>🎵</span><div class="card-title">MZUKWANE TV</div><div class="card-sub">24/7 Retro Mzansi • Old School Classics</div>
+  </div>
+  <div class="card" style="background:rgba(255,215,0,.1);border:2px solid var(--gold);margin-bottom:8px;" onclick="switchToBolobedu()">
+    <span>📺</span><div class="card-title">BOLOBEDU TV</div><div class="card-sub">24/7 Linear Channel • Official Playlist</div>
+  </div>
+  <div class="card" style="background:rgba(255,215,0,.04);border:1px solid var(--gold);margin-bottom:8px;" onclick="safeOpen('https://tv2go.co.za/')">
+    <span>📱</span><div class="card-title">TV2go Mobile</div><div class="card-sub">Premium Live Access Channels</div>
+  </div>
+  <a href="https://tvgarden.world/" target="_blank" class="card-anchor" onclick="safeOpen('https://tvgarden.world/', event)">
+    <div class="card" style="background:rgba(255,215,0,.04);border:1px solid var(--gold);margin-bottom:8px;">
+      <span>🌐</span><div class="card-title">WorldWide TV Matrix</div><div class="card-sub">Global Broadcast Intelligence Index</div>
+    </div>
+  </a>
+  <div class="card" style="background:rgba(255,215,0,.04);border:1px solid var(--gold);margin-bottom:12px;" onclick="safeOpen('https://tvgarden.com/', event)">
+    <span>🏡</span><div class="card-title">TV Garden</div><div class="card-sub">Global Network Web Index</div>
+  </div>
+</div>
+
+<div class="section-title">📺 ADDITIONAL BROADCAST DIRECTORIES</div>
+<div class="grid">
+  <div class="card" onclick="safeOpen('https://www.sabcplus.com/')"><span>🇿🇦</span><div>SABC Plus</div></div>
+  <div class="card" onclick="safeOpen('https://www.enca.com/live')"><span>🎥</span><div>eNCA Live</div></div>
+</div>
+
+<div class="hub-disclaimer">
+  <strong>Regulatory Disclaimer:</strong> BOLO HUB is a non‑monetized content aggregator. Bolobedu TV, Mzukwane TV and Giyani TV use a time‑synchronised linear schedule based on UTC – all viewers see the same video at the same time.
+</div>
+<div id="status-bar"></div>
+
+<!-- ===== BOTTOM BANNER AD (KEPT) ===== -->
+<div class="bottom-banner" id="bottomBanner">
+  <div class="banner-content" id="bannerContent">
+    <span class="banner-icon">🔥</span>
+    <div class="banner-text">
+      <div class="title" id="bannerTitle">🎵 Support BOLO Hub</div>
+      <div class="desc" id="bannerDesc">Visit our sponsor & keep the content free</div>
+    </div>
+  </div>
+  <button class="banner-cta" id="bannerCta">Support →</button>
+  <button class="banner-close" id="bannerClose">✕</button>
+</div>
+
+<audio id="creditsTheme" src="" preload="none"></audio>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+// ========== BOLO HUB PREMIUM ENGINE (NO POP-UP ADS) ==========
+(function(){
+  // --- MONETIZATION CONFIG ---
+  const MONETAG_LINK = 'https://nap5k.com/4/11152512'; // zone 11152512
+  const AD_REWARD_SECONDS = 3600; // +1 hour per 3 ads
+
+  const YT_API_KEY = 'AIzaSyATDKEqv1vjJDsGExNydBXxih0WalXg_uM';
+  const BOLOBEDU_PLAYLIST = 'PLU1sksLJ8yEwcKug0aDms_HLG1FqiLSsY';
+  const MZUKWANE_PLAYLIST = 'PL9YeuNuFdjRiHcd3TMLwTBX70Tmzoe5Ev';
+  const GIYANI_PLAYLIST = 'PL9YeuNuFdjRjsOn1BTNRKTYgm9vhQLOdU'; // Giyani TV playlist
+  
+  const EPOCH_START = new Date(2025,0,1,0,0,0).getTime();
+  const PLAYLIST_CACHE_TTL = 60 * 60 * 1000;
+  const SESSION_DEFAULT = 600;
+
+  const $ = id => document.getElementById(id);
+  const appVideoLoader = $('appVideoLoader');
+  const loaderStatusSpan = $('loaderStatusText');
+  const customControls = $('customControls');
+  const nextBannerDiv = $('nextBanner');
+  const nextTitleSpan = $('nextTitle');
+  const brandLoader = $('brandLoader');
+  const brandLoaderText = $('brandLoaderText');
+  const brandLogoImg = $('brandLogoImg');
+  const cornerLogo = $('cornerLogo');
+  const creditsOverlay = $('creditsOverlay');
+  const backgroundBlocker = $('videoBackgroundBlocker');
+  const tickerEl = $('liveTicker');
+  const tickerText = $('tickerText');
+  const statusBar = $('status-bar');
+  const dsBtn = $('ds-button');
+  const tmBtn = $('tm-button');
+  const sessionTimerDisplay = $('sessionTimerDisplay');
+  const adWatchBtn = $('adWatchBtn');
+  const bottomBanner = $('bottomBanner');
+  const bannerCta = $('bannerCta');
+  const bannerClose = $('bannerClose');
+  const bannerContent = $('bannerContent');
+
+  let player = null;
+  let controlsHideTimeout = null;
+  let userFavorites = JSON.parse(localStorage.getItem('bolo_favs') || '[]');
+  let activeChannel = 'giyani'; // default to Giyani TV
+  let bolobeduData = { videoIds: [], titles: [], durations: [], totalDuration: 0 };
+  let mzukwaneData = { videoIds: [], titles: [], durations: [], totalDuration: 0 };
+  let giyaniData = { videoIds: [], titles: [], durations: [], totalDuration: 0 };
+  let currentPlaylistIndex = 0;
+  let middleBannerTimeout = null, endBannerTimeout = null, preTransitionTimer = null, hideBrandTimer = null, initialStartTimer = null;
+  let cornerShowTimer = null, cornerHideTimer = null, cornerPendingShow = false;
+  let creditsPollingInterval = null;
+  let activeRequests = new Set();
+  let adWatchInProgress = false;
+  let adWatchCount = 0;
+  let adTimer = null;
+
+  let sessionSeconds = SESSION_DEFAULT;
+  let sessionInterval = null;
+
+  // --- Branding ---
+  const BRANDING = {
+    giyani: {
+      name: 'GIYANI TV NETWORK',
+      logo: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjL4eOM9RtNpOv1gE_yX9T9y2h7jWSOxoCu-XZ0V8et2lWYwtFjMI2Gl_eIUp4WO82JbSttoMO56_-KzA0tfYzfY_p7AbQIwijISzVtA8b085fc4n4enwjiHEM3peSshrA2IVB1TRXN7ojEG5rjuFz6Wnydxy1Qw2YKCTMhPaSDOyHtG-ryQj-tluFCAGDf/s516/65816.jpg',
+      tickerName: 'GIYANI TV',
+      tagline: 'GIYANI VIBES 24/7',
+      loaderBg: 'radial-gradient(circle at 50% 50%,#0d2a1a 0%,#051a0d 60%,#000 100%)',
+      accentColor: 'rgba(0,255,100,.05)',
+      ringColor: 'rgba(0,255,100,.08)',
+      barColor: '#00ff66',
+      loaderClass: 'giyani-loader'
+    },
+    mzukwane: {
+      name: 'MZUKWANE TV NETWORK',
+      logo: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjFBm4Dk_fngHKJvLlxCeOZoHHOmFO9ow1qr4ThNYW48uOwUOryeoAdfS2R_0vkZF1HC-ysNTwmjA9nBaAq5VKydfmEIIjUqS_yu9uKO2iqnGgMSEVbRt8C8vTrrW2eWapER24X7CorC1glEEZGro3iIwB8z4pK_cImY2g2xrIkN8ZQf-JovxOdZ27RE6On/s320/61848.jpg',
+      tickerName: 'MZUKWANE TV',
+      tagline: 'RETRO MZANSI 24/7',
+      loaderBg: 'radial-gradient(circle at 50% 50%,#1a1524 0%,#0d0a1a 70%,#000 100%)',
+      accentColor: 'rgba(200,150,255,.03)',
+      ringColor: 'rgba(200,150,255,.06)',
+      barColor: '#c896ff',
+      loaderClass: ''
+    },
+    bolobedu: {
+      name: 'BOLOBEDU TV NETWORK',
+      logo: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhV8ohdXz4DPmbe5HiOX8K2L5gEbxGHCQqBOdgP6trl5MMUVDs6OuqCnSVNk_qq6zzhvclneswQkWDSzA8FhD51N8_841xs-TlboGrnMzyz8H0-MmgK8W0t2-EtZL67unrySgCcobN8L9JD-eaAwdbS5FuyhnC11mjapFjXarrCaGKWaucnWxx4aP6nGSbf/s715/24022.jpg',
+      tickerName: 'BOLOBEDU TV',
+      tagline: '24/7 LINEAR NETWORK',
+      loaderBg: 'radial-gradient(circle at 50% 50%,#151324 0%,#07060d 70%,#000 100%)',
+      accentColor: 'rgba(255,215,0,.03)',
+      ringColor: 'rgba(255,215,0,.06)',
+      barColor: '#FFD700',
+      loaderClass: ''
+    }
+  };
+
+  // Fallback videos
+  const FALLBACK_VIDEOS = {
+    giyani: {
+      videoIds: ['dQw4w9WgXcQ', '5qap5aO4i9A', 'KQetemT1s4c'], 
+      durations: [180, 210, 195], 
+      titles: ['Giyani Vibes 1', 'Giyani Vibes 2', 'Giyani Vibes 3'], 
+      totalDuration: 585
+    },
+    mzukwane: { 
+      videoIds: ['5qap5aO4i9A', 'KQetemT1s4c', 'xT0V5YhGq8I', '7JY7X7X7JY7', 'Qw9oX-K1I0U'], 
+      durations: [180, 210, 195, 220, 240], 
+      titles: ['Retro Mzansi Classic 1', 'Old School Hit 2', 'Vintage Jam 3', 'Golden Oldie 4', 'Mzanzi Classic 5'], 
+      totalDuration: 1045 
+    },
+    bolobedu: { videoIds: ['c0U0kUJ1cHE'], durations: [10], titles: ['Broadcast Standby'], totalDuration: 10 }
+  };
+
+  // ========== AD FUNCTIONS (NO POP-UPS - only bottom banner) ==========
+  function triggerMonetagAd(callback) {
+    window.open(MONETAG_LINK, '_blank');
+    if (callback) setTimeout(callback, 2000);
+    return true;
+  }
+
+  function watchAdsForTime() {
+    if (adWatchInProgress) {
+      showToast('⏳ Please wait, ads are already playing...');
+      return;
+    }
+    if (sessionSeconds >= 7200) {
+      showToast('⏰ You already have enough time (max 2 hours)');
+      return;
+    }
+    adWatchInProgress = true;
+    adWatchCount = 0;
+    if (adWatchBtn) {
+      adWatchBtn.disabled = true;
+      adWatchBtn.textContent = '🎬 WATCHING ADS...';
+    }
+    showToast('🎬 Starting ad sequence... Please wait');
+    setTimeout(function() {
+      triggerNextAd();
+    }, 1500);
+  }
+
+  function triggerNextAd() {
+    if (adWatchCount >= 3) {
+      adWatchInProgress = false;
+      if (adWatchBtn) {
+        adWatchBtn.disabled = false;
+        adWatchBtn.textContent = '🎬 WATCH 3 ADS +1HR';
+      }
+      sessionSeconds += AD_REWARD_SECONDS;
+      updateSessionDisplay();
+      showToast('✅ +1 Hour added! Thank you for supporting BOLO.');
+      return;
+    }
+    adWatchCount++;
+    showToast(`🎬 Opening ad ${adWatchCount}/3...`);
+    window.open(MONETAG_LINK, '_blank');
+    if (adTimer) clearTimeout(adTimer);
+    adTimer = setTimeout(function() {
+      triggerNextAd();
+    }, 3000);
+  }
+
+  // ========== BOTTOM BANNER ==========
+  if (bottomBanner) {
+    setTimeout(() => {
+      bottomBanner.classList.remove('hidden');
+    }, 3000);
+  }
+  if (bannerCta) {
+    bannerCta.addEventListener('click', function(e) {
+      e.stopPropagation();
+      window.open(MONETAG_LINK, '_blank');
+      showToast('🌟 Thank you for supporting BOLO!');
+    });
+  }
+  if (bannerContent) {
+    bannerContent.addEventListener('click', function() {
+      window.open(MONETAG_LINK, '_blank');
+      showToast('🌟 Thank you for supporting BOLO!');
+    });
+  }
+  if (bannerClose) {
+    bannerClose.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (bottomBanner) bottomBanner.classList.add('hidden');
+      setTimeout(() => {
+        if (bottomBanner) bottomBanner.classList.remove('hidden');
+      }, 120000);
+    });
+  }
+
+  // ========== SESSION TIMER ==========
+  function updateSessionDisplay(){
+    if(!sessionTimerDisplay) return;
+    const m = Math.floor(sessionSeconds/60);
+    const s = Math.floor(sessionSeconds%60);
+    sessionTimerDisplay.innerText = `⏳ ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if(sessionSeconds <= 0){
+      sessionTimerDisplay.innerText = '⏳ 00:00';
+      if(player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING){
+        player.pauseVideo();
+        showToast('⏰ Session expired! Watch 3 ads to add 1 hour.');
+      }
+    }
+  }
+
+  function startSessionTimer(){
+    if(sessionInterval) clearInterval(sessionInterval);
+    sessionInterval = setInterval(() => {
+      sessionSeconds = Math.max(0, sessionSeconds - 1);
+      updateSessionDisplay();
+      if(sessionSeconds === 10) showToast('⏳ 10 seconds remaining! Watch ads to extend.');
+    }, 1000);
+  }
+
+  function resetSessionTimer(seconds = SESSION_DEFAULT){
+    sessionSeconds = seconds;
+    updateSessionDisplay();
+    if(!sessionInterval) startSessionTimer();
+  }
+
+  // Expose to global for onclick
+  window.watchAdsForTime = watchAdsForTime;
+
+  // ========== CORE FUNCTIONS ==========
+  function showToast(msg){
+    if(!statusBar) return;
+    statusBar.innerText = msg;
+    statusBar.style.display = 'block';
+    clearTimeout(statusBar._hide);
+    statusBar._hide = setTimeout(() => { 
+      statusBar.style.display = 'none'; 
+    }, 3000);
+  }
+
+  function getActiveData(){ 
+    if (activeChannel === 'bolobedu') {
+      return bolobeduData.videoIds.length ? bolobeduData : FALLBACK_VIDEOS.bolobedu;
+    } else if (activeChannel === 'mzukwane') {
+      return mzukwaneData.videoIds.length ? mzukwaneData : FALLBACK_VIDEOS.mzukwane;
+    } else if (activeChannel === 'giyani') {
+      return giyaniData.videoIds.length ? giyaniData : FALLBACK_VIDEOS.giyani;
+    }
+    return { videoIds: [], titles: [], durations: [], totalDuration: 0 };
+  }
+
+  function setLoaderStatus(txt, pause){
+    if(loaderStatusSpan) loaderStatusSpan.innerText = txt || "BROADCASTING";
+    if(appVideoLoader) pause ? appVideoLoader.classList.add('paused-loader') : appVideoLoader.classList.remove('paused-loader');
+    syncBackgroundBlocker();
+    rescheduleCornerLogo();
+  }
+
+  function isAnyOverlayActive(){
+    if(appVideoLoader && !appVideoLoader.classList.contains('hide-loader')) return true;
+    if(nextBannerDiv && nextBannerDiv.style.visibility === 'visible' && nextBannerDiv.style.opacity === '1') return true;
+    if(brandLoader && brandLoader.style.visibility === 'visible' && brandLoader.style.opacity !== '0') return true;
+    if(creditsOverlay && creditsOverlay.classList.contains('show-credits')) return true;
+    return false;
+  }
+
+  function attemptShowCornerLogo(){ if(!player) return false; if(isAnyOverlayActive()){ cornerPendingShow=true; return false; } if(player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING){ const cur=player.getCurrentTime(), dur=player.getDuration(); if(dur && (dur-cur)<=13){ cornerLogo.classList.remove('visible-for-bolobedu'); return false; } } cornerLogo.classList.add('visible-for-bolobedu'); cornerPendingShow=false; return true; }
+  function hideCornerLogo(){ cornerLogo.classList.remove('visible-for-bolobedu'); cornerPendingShow=false; }
+  function rescheduleCornerLogo(){ if(cornerPendingShow && !isAnyOverlayActive()) attemptShowCornerLogo(); }
+  function resetCornerLogoTimers(){ if(cornerShowTimer) clearTimeout(cornerShowTimer); if(cornerHideTimer) clearTimeout(cornerHideTimer); hideCornerLogo(); cornerPendingShow=false; }
+  function scheduleCornerLogo(duration){ resetCornerLogoTimers(); const showDelay = 10000 + Math.floor(Math.random()*5000); cornerShowTimer = setTimeout(() => { if(!isAnyOverlayActive()) attemptShowCornerLogo(); else cornerPendingShow=true; }, showDelay); if(duration && duration>13){ cornerHideTimer = setTimeout(() => hideCornerLogo(), (duration-13)*1000); } }
+
+  function syncBackgroundBlocker(){ if(!backgroundBlocker) return; if(appVideoLoader && !appVideoLoader.classList.contains('hide-loader')) backgroundBlocker.classList.add('blocker-active'); else backgroundBlocker.classList.remove('blocker-active'); }
+  
+  function syncUI(){
+    if(activeChannel === 'bolobedu' || activeChannel === 'mzukwane' || activeChannel === 'giyani'){ tickerEl.classList.add('visible-for-bolobedu'); } else { tickerEl.classList.remove('visible-for-bolobedu'); resetCornerLogoTimers(); hideCredits(); }
+    syncBackgroundBlocker(); rescheduleCornerLogo();
+    updateBranding(activeChannel);
+  }
+
+  function resetControlsTimer(){ if(controlsHideTimeout) clearTimeout(controlsHideTimeout); if(customControls) customControls.classList.remove('hide-controls'); if(appVideoLoader) appVideoLoader.classList.remove('hide-loader'); syncBackgroundBlocker(); rescheduleCornerLogo(); if(player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING){ controlsHideTimeout = setTimeout(() => { if(customControls) customControls.classList.add('hide-controls'); if(appVideoLoader && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING) appVideoLoader.classList.add('hide-loader'); syncBackgroundBlocker(); rescheduleCornerLogo(); }, 5000); } }
+
+  function showBrandLoader(){ 
+    if(!brandLoader) return; 
+    const brand = BRANDING[activeChannel] || BRANDING.giyani;
+    brandLoader.classList.remove('giyani-loader');
+    if (brand.loaderClass) {
+      brandLoader.classList.add(brand.loaderClass);
+    }
+    brandLoader.style.background = brand.loaderBg || 'radial-gradient(circle at 50% 50%,#151324 0%,#07060d 70%,#000 100%)';
+    brandLoader.style.visibility = 'visible'; 
+    brandLoader.style.opacity = '1'; 
+    resetCornerLogoTimers(); 
+    rescheduleCornerLogo(); 
+  }
+  
+  function scheduleHideBrandLoader(delay){ if(hideBrandTimer) clearTimeout(hideBrandTimer); hideBrandTimer = setTimeout(() => { if(brandLoader && brandLoader.style.visibility === 'visible'){ brandLoader.style.opacity = '0'; setTimeout(() => { if(brandLoader) brandLoader.style.visibility = 'hidden'; rescheduleCornerLogo(); }, 300); } }, delay || 5000); }
+
+  function showCredits(){ if(creditsOverlay && !creditsOverlay.classList.contains('show-credits')){ creditsOverlay.classList.add('show-credits'); hideCornerLogo(); const container = creditsOverlay.querySelector('.credits-scroll-container'); if(container){ container.style.animation='none'; void container.offsetHeight; container.style.animation='scrollCreditsUp 9.5s linear forwards'; } } }
+  function hideCredits(){ if(creditsOverlay && creditsOverlay.classList.contains('show-credits')){ creditsOverlay.classList.remove('show-credits'); rescheduleCornerLogo(); } }
+  function startCreditsPolling(){ stopCreditsPolling(); creditsPollingInterval = setInterval(() => { if(player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING){ const cur=player.getCurrentTime(), dur=player.getDuration(); if(dur && dur>0){ const rem=dur-cur; if(dur>600 && rem<=17 && rem>=8.5) showCredits(); else if(rem<8.5) hideCredits(); } } }, 200); }
+  function stopCreditsPolling(){ if(creditsPollingInterval){ clearInterval(creditsPollingInterval); creditsPollingInterval=null; } }
+
+  function getSchedulePosition(data){ const now=Date.now(); const elapsed=(now-EPOCH_START)/1000; const offset=elapsed % data.totalDuration; let cum=0; for(let i=0;i<data.durations.length;i++){ if(offset < cum + data.durations[i]) return { index:i, seek:offset-cum }; cum += data.durations[i]; } return { index:0, seek:0 }; }
+
+  function updateTicker(index, data){ if(!tickerText) return; const nextIdx=(index+1)%data.videoIds.length; const nowTitle=(data.titles[index]||'Bolo TV').substring(0,45); const nextTitle=(data.titles[nextIdx]||'Up Next').substring(0,45); let nextTime='Loading...'; if(data.durations.length){ const pos=getSchedulePosition(data); const rem=data.durations[pos.index]-pos.seek; const nextEpoch=Date.now() + (rem*1000); const d=new Date(nextEpoch); nextTime=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); } const brand = BRANDING[activeChannel] || BRANDING.giyani; const logoSpan=tickerText.querySelector('.ticker-logo'); if(logoSpan){ while(logoSpan.nextSibling) logoSpan.nextSibling.remove(); logoSpan.insertAdjacentHTML('afterend', ` ${brand.tickerName} <span class="ticker-divider">•</span> NOW: ${nowTitle} <span class="ticker-divider">•</span> NEXT: ${nextTitle} [${nextTime}] <span class="ticker-divider">•</span> ${brand.tagline}`); } else { tickerText.innerHTML = `<span class="ticker-logo"><img src="${brand.logo}" alt="" loading="lazy"></span> ${brand.tickerName} <span class="ticker-divider">•</span> NOW: ${nowTitle} <span class="ticker-divider">•</span> NEXT: ${nextTitle} [${nextTime}]`; } }
+
+  function scheduleBannersForCurrentVideo(data, index){ if(middleBannerTimeout) clearTimeout(middleBannerTimeout); if(endBannerTimeout) clearTimeout(endBannerTimeout); const dur=data.durations[index]; if(!dur) return; const nextIdx=(index+1)%data.videoIds.length; const nextTitle=data.titles[nextIdx]||"Next Show"; middleBannerTimeout = setTimeout(() => { nextTitleSpan.innerText = nextTitle; nextBannerDiv.style.visibility='visible'; nextBannerDiv.style.opacity='1'; rescheduleCornerLogo(); setTimeout(() => { nextBannerDiv.style.opacity='0'; nextBannerDiv.style.visibility='hidden'; rescheduleCornerLogo(); }, 5000); }, (dur/2)*1000); const endTime=Math.max(0, dur-25); endBannerTimeout = setTimeout(() => { nextTitleSpan.innerText = nextTitle; nextBannerDiv.style.visibility='visible'; nextBannerDiv.style.opacity='1'; rescheduleCornerLogo(); setTimeout(() => { nextBannerDiv.style.opacity='0'; nextBannerDiv.style.visibility='hidden'; rescheduleCornerLogo(); }, 10000); }, endTime*1000); }
+
+  function schedulePreTransition(remainingSecs){ if(preTransitionTimer) clearTimeout(preTransitionTimer); const lead=8.5; if(remainingSecs > lead){ preTransitionTimer = setTimeout(() => { if(player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING) showBrandLoader(); }, (remainingSecs-lead)*1000); } else { if(player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING) showBrandLoader(); } }
+
+  function playNextVideo(){ 
+    hideCredits(); 
+    showBrandLoader(); 
+    const data=getActiveData(); 
+    currentPlaylistIndex=(currentPlaylistIndex+1)%data.videoIds.length; 
+    if(player && player.loadVideoById) player.loadVideoById(data.videoIds[currentPlaylistIndex]); 
+    updateTicker(currentPlaylistIndex, data); 
+    syncUI(); 
+    scheduleHideBrandLoader(5000);
+  }
+
+  function performInitialSync(data){ 
+    if(!data.videoIds.length) return; 
+    hideCredits(); 
+    const pos=getSchedulePosition(data); 
+    currentPlaylistIndex=pos.index; 
+    if(player && player.loadVideoById) player.loadVideoById({ videoId:data.videoIds[currentPlaylistIndex], startSeconds:pos.seek }); 
+    updateTicker(currentPlaylistIndex, data); 
+    scheduleBannersForCurrentVideo(data, currentPlaylistIndex); 
+    syncUI(); 
+  }
+
+  function getCachedPlaylistData(key){ try { const raw = localStorage.getItem(key); if(!raw) return null; const parsed = JSON.parse(raw); if(Date.now() - parsed.timestamp < PLAYLIST_CACHE_TTL) return parsed.data; localStorage.removeItem(key); return null; } catch(e){ return null; } }
+  function setCachedPlaylistData(key, data){ try { localStorage.setItem(key, JSON.stringify({ data: data, timestamp: Date.now() })); } catch(e){} }
+
+  async function fetchPlaylistData(playlistId, cacheKey, targetData, onSuccess){
+    const cached = getCachedPlaylistData(cacheKey);
+    if(cached && cached.videoIds && cached.videoIds.length){ 
+      console.log(`📦 ${cacheKey} loaded from cache`); 
+      Object.assign(targetData, cached); 
+      onSuccess(); 
+      return; 
+    }
+    const controller = new AbortController(); 
+    const timeout = setTimeout(() => controller.abort(), 15000); 
+    activeRequests.add(controller);
+    try{
+      const url=`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=${playlistId}&key=${YT_API_KEY}`;
+      const resp=await fetch(url, { signal:controller.signal }); 
+      clearTimeout(timeout); 
+      const data=await resp.json();
+      if(!data.items || !data.items.length) throw new Error("empty playlist");
+      const videoIds=data.items.map(i=>i.snippet.resourceId.videoId);
+      const rawTitles=data.items.map(i=>i.snippet.title);
+      const idsParam=videoIds.join(',');
+      const durUrl=`https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${idsParam}&key=${YT_API_KEY}`;
+      const durResp=await fetch(durUrl, { signal:controller.signal }); 
+      const durData=await durResp.json();
+      if(durData.items){
+        const validIds=[], validDurs=[], validTitles=[];
+        for(let i=0; i<durData.items.length; i++){
+          const item=durData.items[i]; 
+          const origId=videoIds[i]; 
+          const iso=item.contentDetails.duration;
+          const match=iso.match(/PT(\d+H)?(\d+M)?(\d+S)?/); 
+          let secs=0;
+          if(match[1]) secs+=parseInt(match[1])*3600; 
+          if(match[2]) secs+=parseInt(match[2])*60; 
+          if(match[3]) secs+=parseInt(match[3]);
+          if(secs>0){ validIds.push(origId); validDurs.push(secs); validTitles.push(rawTitles[i]); }
+        }
+        if(validIds.length===0) throw new Error("no valid videos");
+        const cacheData = { videoIds: validIds, durations: validDurs, titles: validTitles, totalDuration: validDurs.reduce((a,b)=>a+b,0) };
+        setCachedPlaylistData(cacheKey, cacheData);
+        Object.assign(targetData, cacheData);
+        onSuccess();
+      } else throw new Error("duration fetch fail");
+    } catch(err){ 
+      console.warn(`Playlist fetch error for ${cacheKey}`, err); 
+      const fallbackKey = cacheKey.includes('bolobedu') ? 'bolobedu' : (cacheKey.includes('mzukwane') ? 'mzukwane' : 'giyani');
+      const fallback = FALLBACK_VIDEOS[fallbackKey] || FALLBACK_VIDEOS.giyani;
+      setCachedPlaylistData(cacheKey, fallback);
+      Object.assign(targetData, fallback);
+      onSuccess();
+    }
+    finally { clearTimeout(timeout); activeRequests.delete(controller); }
+  }
+
+  function switchToChannel(channel, data){
+    if(activeChannel === channel && data.videoIds.length) return;
+    activeChannel = channel;
+    syncUI();
+    
+    const activeData = data.videoIds.length ? data : FALLBACK_VIDEOS[channel];
+    
+    showBrandLoader();
+    if(initialStartTimer) clearTimeout(initialStartTimer);
+    initialStartTimer = setTimeout(() => { 
+      performInitialSync(activeData); 
+      scheduleHideBrandLoader(5000); 
+    }, 1000);
+    
+    setLoaderStatus(channel === 'bolobedu' ? "LINEAR MODE" : (channel === 'mzukwane' ? "RETRO MODE" : "GIYANI MODE"), false);
+    document.querySelectorAll('.chan-btn').forEach(b=>b.classList.remove('active'));
+    const btn=document.querySelector(`.chan-btn[data-id="${channel}"]`);
+    if(btn) btn.classList.add('active');
+    resetControlsTimer();
+    showToast(`Switched to ${channel === 'bolobedu' ? 'Bolobedu TV' : (channel === 'mzukwane' ? 'Mzukwane TV' : 'Giyani TV')}`);
+    if(preTransitionTimer) clearTimeout(preTransitionTimer);
+    if(hideBrandTimer) clearTimeout(hideBrandTimer);
+    syncUI();
+    resetCornerLogoTimers();
+  }
+
+  window.switchToGiyani = function(){ 
+    if (!giyaniData.videoIds.length) {
+      Object.assign(giyaniData, FALLBACK_VIDEOS.giyani);
+    }
+    switchToChannel('giyani', giyaniData); 
+  };
+
+  window.switchToMzukwane = function(){ 
+    if (!mzukwaneData.videoIds.length) {
+      Object.assign(mzukwaneData, FALLBACK_VIDEOS.mzukwane);
+    }
+    switchToChannel('mzukwane', mzukwaneData); 
+  };
+
+  window.switchToBolobedu = function(){ 
+    if (!bolobeduData.videoIds.length) {
+      Object.assign(bolobeduData, FALLBACK_VIDEOS.bolobedu);
+    }
+    switchToChannel('bolobedu', bolobeduData); 
+  };
+
+  window.playExternal = function(videoId, btn){
+    activeChannel = 'external';
+    syncUI();
+    stopCreditsPolling();
+    hideCredits();
+    if(player && player.loadVideoById) player.loadVideoById(videoId);
+    document.querySelectorAll('.chan-btn').forEach(b=>b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    setLoaderStatus("EXTERNAL FEED", false);
+    resetControlsTimer();
+    if(middleBannerTimeout) clearTimeout(middleBannerTimeout);
+    if(endBannerTimeout) clearTimeout(endBannerTimeout);
+    if(preTransitionTimer) clearTimeout(preTransitionTimer);
+    if(hideBrandTimer) clearTimeout(hideBrandTimer);
+    if(initialStartTimer) clearTimeout(initialStartTimer);
+    if(nextBannerDiv){ nextBannerDiv.style.opacity='0'; nextBannerDiv.style.visibility='hidden'; }
+    if(brandLoader && brandLoader.style.visibility==='visible'){ brandLoader.style.opacity='0'; setTimeout(()=>brandLoader.style.visibility='hidden',300); }
+    syncUI();
+    resetCornerLogoTimers();
+  };
+
+  window.togglePlayPause = function(){ if(!player) return; if(player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING){ player.pauseVideo(); setLoaderStatus("PAUSED", true); resetCornerLogoTimers(); stopCreditsPolling(); } else { const data=getActiveData(); if((activeChannel === 'bolobedu' || activeChannel === 'mzukwane' || activeChannel === 'giyani') && data.videoIds.length){ showBrandLoader(); const pos=getSchedulePosition(data); currentPlaylistIndex=pos.index; if(player && player.loadVideoById) player.loadVideoById({ videoId:data.videoIds[currentPlaylistIndex], startSeconds:pos.seek }); updateTicker(currentPlaylistIndex, data); scheduleBannersForCurrentVideo(data, currentPlaylistIndex); scheduleHideBrandLoader(5000); } else { player.playVideo(); } setLoaderStatus("BROADCASTING", false); } resetControlsTimer(); syncBackgroundBlocker(); rescheduleCornerLogo(); };
+
+  window.toggleFavorite = function(id, event){ event.stopPropagation(); const btn=document.querySelector(`.chan-btn[data-id="${id}"]`); if(userFavorites.includes(id)){ userFavorites=userFavorites.filter(i=>i!==id); if(btn) btn.classList.remove('is-favorite'); showToast("Removed from showcase"); } else { userFavorites.push(id); if(btn) btn.classList.add('is-favorite'); showToast("Added to showcase ⭐"); } localStorage.setItem('bolo_favs', JSON.stringify(userFavorites)); const favTab=$('fav-filter-tab'); if(favTab && favTab.classList.contains('active')) filterGenre('favorites', favTab); };
+  function applyFavUI(){ userFavorites.forEach(id => { const btn=document.querySelector(`.chan-btn[data-id="${id}"]`); if(btn) btn.classList.add('is-favorite'); }); }
+
+  window.filterGenre = function(genre, btnEl){ document.querySelectorAll('.genre-filter-btn').forEach(b=>b.classList.remove('active')); if(btnEl) btnEl.classList.add('active'); document.querySelectorAll('.chan-btn').forEach(chan => { const g=chan.getAttribute('data-genre'); if(genre==='all') chan.classList.add('visible-channel'); else if(genre==='favorites'){ if(userFavorites.includes(chan.getAttribute('data-id'))) chan.classList.add('visible-channel'); else chan.classList.remove('visible-channel'); } else if(g===genre) chan.classList.add('visible-channel'); else chan.classList.remove('visible-channel'); }); };
+
+  window.toggleTheaterMode = function(){ document.body.classList.toggle('theater-mode-active'); const isOn=document.body.classList.contains('theater-mode-active'); if(tmBtn){ tmBtn.innerHTML=isOn ? '<span>☀️</span> LIGHT MODE' : '<span>🕶️</span> CINEMA MODE'; if(isOn) tmBtn.classList.add('tm-on'); else tmBtn.classList.remove('tm-on'); } showToast(isOn ? "Cinema Mode On" : "Cinema Mode Off"); };
+  window.toggleFullscreen = function(){ const target=$('fullscreen-target'); if(!target) return; if(!document.fullscreenElement) target.requestFullscreen?.() || target.webkitRequestFullscreen?.(); else document.exitFullscreen?.() || document.webkitExitFullscreen?.(); resetControlsTimer(); };
+  window.toggleDataSaver = function(){ document.body.classList.toggle('data-saver-active'); const isOn=document.body.classList.contains('data-saver-active'); if(dsBtn){ dsBtn.innerHTML=isOn ? '<span>🌐</span> DATA SAVER: ON' : '<span>🌐</span> DATA SAVER: OFF'; if(isOn) dsBtn.classList.add('ds-on'); else dsBtn.classList.remove('ds-on'); } };
+  window.safeOpen = function(url, event){ if(event && event.preventDefault) event.preventDefault(); showToast("Opening gateway..."); setTimeout(() => window.open(url, '_blank'), 200); };
+
+  function updateBranding(channel) {
+    const brand = BRANDING[channel];
+    if (!brand) return;
+    if (brandLoaderText) brandLoaderText.innerText = brand.name;
+    if (brandLogoImg) brandLogoImg.src = brand.logo;
+    const cornerImg = cornerLogo.querySelector('img');
+    if (cornerImg) cornerImg.src = brand.logo;
+    if (brandLoader) {
+      brandLoader.classList.remove('giyani-loader');
+      if (brand.loaderClass) {
+        brandLoader.classList.add(brand.loaderClass);
+      }
+      brandLoader.style.background = brand.loaderBg;
+      const rings = brandLoader.querySelector('.broadcast-visual-rings');
+      if (rings) {
+        rings.style.borderColor = brand.ringColor;
+      }
+      const bar = brandLoader.querySelector('.linear-station-bar');
+      if (bar) {
+        bar.style.setProperty('--bar-color', brand.barColor);
+        const style = document.createElement('style');
+        style.id = 'dynamic-bar-style';
+        const existing = document.getElementById('dynamic-bar-style');
+        if (existing) existing.remove();
+        style.id = 'dynamic-bar-style';
+        style.textContent = `.brand-loader.${brand.loaderClass} .linear-station-bar::after { background: linear-gradient(90deg, transparent, ${brand.barColor}, transparent) !important; }`;
+        document.head.appendChild(style);
+      }
+    }
+    updateTicker(currentPlaylistIndex, getActiveData());
+  }
+
+  // ========== YOUTUBE API READY ==========
+  window.onYouTubeIframeAPIReady = function(){
+    player = new YT.Player('main-player', {
+      videoId: 'c0U0kUJ1cHE',
+      playerVars: { autoplay:1, rel:0, modestbranding:1, playsinline:1, controls:0, iv_load_policy:3, disablekb:1 },
+      events: {
+        onReady: function(){
+          fetchPlaylistData(GIYANI_PLAYLIST, 'giyani_playlist_cache', giyaniData, () => {
+            if(activeChannel === 'giyani') { 
+              performInitialSync(giyaniData.videoIds.length ? giyaniData : FALLBACK_VIDEOS.giyani); 
+            }
+          });
+          fetchPlaylistData(MZUKWANE_PLAYLIST, 'mzukwane_playlist_cache', mzukwaneData, () => {
+            if(activeChannel === 'mzukwane') { 
+              performInitialSync(mzukwaneData.videoIds.length ? mzukwaneData : FALLBACK_VIDEOS.mzukwane); 
+            }
+          });
+          fetchPlaylistData(BOLOBEDU_PLAYLIST, 'bolobedu_playlist_cache', bolobeduData, () => {
+            if(activeChannel === 'bolobedu') { 
+              performInitialSync(bolobeduData.videoIds.length ? bolobeduData : FALLBACK_VIDEOS.bolobedu); 
+            }
+          });
+          applyFavUI();
+          syncUI();
+          resetSessionTimer(SESSION_DEFAULT);
+          setInterval(() => {
+            const data=getActiveData();
+            if((activeChannel === 'bolobedu' || activeChannel === 'mzukwane' || activeChannel === 'giyani') && player && player.getPlayerState && player.getPlayerState()===YT.PlayerState.PLAYING) {
+              updateTicker(currentPlaylistIndex, data);
+            }
+          }, 60000);
+          setTimeout(() => {
+            if (bottomBanner) bottomBanner.classList.remove('hidden');
+          }, 3000);
+        },
+        onStateChange: function(e){
+          const data=getActiveData();
+          if(e.data === YT.PlayerState.PLAYING){
+            resetControlsTimer();
+            if(activeChannel === 'bolobedu' || activeChannel === 'mzukwane' || activeChannel === 'giyani') {
+              scheduleBannersForCurrentVideo(data, currentPlaylistIndex);
+              if(brandLoader && brandLoader.style.visibility==='visible' && !hideBrandTimer) scheduleHideBrandLoader(5000);
+              const dur=data.durations[currentPlaylistIndex];
+              if(dur){ const rem=dur - (player.getCurrentTime()||0); schedulePreTransition(rem); scheduleCornerLogo(dur); startCreditsPolling(); }
+            }
+            syncUI(); rescheduleCornerLogo();
+          }
+          else if(e.data === YT.PlayerState.PAUSED){ if(appVideoLoader) appVideoLoader.classList.remove('hide-loader'); if(preTransitionTimer) clearTimeout(preTransitionTimer); resetCornerLogoTimers(); stopCreditsPolling(); syncUI(); }
+          else if(e.data === YT.PlayerState.ENDED){ if(preTransitionTimer) clearTimeout(preTransitionTimer); resetCornerLogoTimers(); stopCreditsPolling(); if(activeChannel === 'bolobedu' || activeChannel === 'mzukwane' || activeChannel === 'giyani') playNextVideo(); }
+          else { syncUI(); }
+        },
+        onError: function(e) {
+          console.warn('YouTube Player Error:', e.data);
+          // Hide the default YouTube controls if they become visible due to error
+          // Force a reset: load a known good video, then reload the current channel
+          if (player && player.loadVideoById) {
+            // First, load a fallback to reset the player state
+            player.loadVideoById('c0U0kUJ1cHE');
+            // After a short delay, reload the current channel's video
+            setTimeout(() => {
+              const data = getActiveData();
+              if (data.videoIds.length) {
+                const pos = getSchedulePosition(data);
+                currentPlaylistIndex = pos.index;
+                player.loadVideoById({ 
+                  videoId: data.videoIds[currentPlaylistIndex], 
+                  startSeconds: pos.seek 
+                });
+                updateTicker(currentPlaylistIndex, data);
+                scheduleBannersForCurrentVideo(data, currentPlaylistIndex);
+              }
+            }, 500);
+          }
+          // Ensure controls are hidden
+          setTimeout(() => {
+            if (customControls) customControls.classList.add('hide-controls');
+            if (appVideoLoader) appVideoLoader.classList.add('hide-loader');
+            syncBackgroundBlocker();
+          }, 1000);
+        }
+      }
+    });
+    const wrapper=$('fullscreen-target'); if(wrapper){ wrapper.addEventListener('mousemove', resetControlsTimer, {passive:true}); wrapper.addEventListener('touchstart', resetControlsTimer, {passive:true}); }
+    const observer = new MutationObserver(() => { if(activeChannel === 'bolobedu' || activeChannel === 'mzukwane' || activeChannel === 'giyani'){ const ctrl=$('customControls'); if(ctrl && ctrl.classList.contains('hide-controls')){ if(tickerEl){ tickerEl.style.opacity='1'; tickerEl.style.visibility='visible'; } } else { if(tickerEl){ tickerEl.style.opacity='0'; tickerEl.style.visibility='hidden'; } } syncUI(); rescheduleCornerLogo(); } });
+    const ctrl=$('customControls'); if(ctrl) observer.observe(ctrl, { attributes:true, attributeFilter:['class'] });
+    const overlayObs = new MutationObserver(() => rescheduleCornerLogo()); if(appVideoLoader) overlayObs.observe(appVideoLoader, { attributes:true, attributeFilter:['class'] }); if(nextBannerDiv) overlayObs.observe(nextBannerDiv, { attributes:true, attributeFilter:['style','class'] }); if(brandLoader) overlayObs.observe(brandLoader, { attributes:true, attributeFilter:['style'] });
+    syncUI();
+  };
+
+  window.addEventListener('beforeunload', function(){ if(middleBannerTimeout) clearTimeout(middleBannerTimeout); if(endBannerTimeout) clearTimeout(endBannerTimeout); if(preTransitionTimer) clearTimeout(preTransitionTimer); if(hideBrandTimer) clearTimeout(hideBrandTimer); if(initialStartTimer) clearTimeout(initialStartTimer); if(cornerShowTimer) clearTimeout(cornerShowTimer); if(cornerHideTimer) clearTimeout(cornerHideTimer); if(adTimer) clearTimeout(adTimer); stopCreditsPolling(); if(sessionInterval) clearInterval(sessionInterval); activeRequests.forEach(c => { try{ c.abort(); }catch(e){} }); activeRequests.clear(); }, {passive:true});
+
+  console.log('📺 BOLO HUB (No Pop-up Ads - Only Bottom Banner)');
+})();
+</script>
+</body>
+</html>

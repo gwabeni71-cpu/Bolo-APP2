@@ -1,0 +1,3101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- VIEWPORT: Static layout, no zoom drift, safe-area insets -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>BOLO PULSE · Pro</title>
+    <style>
+        /* === STATIC LAYOUT FIXES (added, without altering existing styles) === */
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            min-height: 100dvh;
+            min-height: -webkit-fill-available;
+            padding-bottom: max(env(safe-area-inset-bottom, 20px), 140px);
+            /* extra space for bottom banner + safe area */
+        }
+        /* Ensure sticky player is truly fixed on iOS */
+        .sticky-player {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            background: #000;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .8);
+            width: 100%;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+        /* Bottom banner respects safe area */
+        .bottom-banner {
+            padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
+        }
+        /* Prevent unwanted touch interactions on shields */
+        .player-shield {
+            touch-action: none;
+        }
+        /* Fullscreen fixes */
+        .sticky-player:fullscreen,
+        .sticky-player:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: #000;
+        }
+        .sticky-player:fullscreen .video-container,
+        .sticky-player:-webkit-full-screen .video-container {
+            height: 100vh;
+            padding-bottom: 0;
+        }
+        .sticky-player:fullscreen #mainView,
+        .sticky-player:-webkit-full-screen #mainView {
+            height: 100% !important;
+        }
+        .sticky-player:fullscreen .custom-controls,
+        .sticky-player:-webkit-full-screen .custom-controls {
+            padding-bottom: max(10px, env(safe-area-inset-bottom, 20px));
+        }
+        /* Ensure body scrolls smoothly */
+        body {
+            overscroll-behavior-y: contain;
+        }
+
+        /* === CORE STYLES – RETAINED (unaltered) === */
+        * {
+            box-sizing: border-box
+        }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            padding-bottom: 140px;
+            /* extra space for banner + controls */
+            overflow-x: hidden
+        }
+        .sticky-player {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            background: #000;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .8);
+            width: 100%;
+            transform: translateZ(0)
+        }
+        .sticky-player:fullscreen,
+        .sticky-player:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: #000;
+        }
+        .sticky-player:fullscreen .video-container,
+        .sticky-player:-webkit-full-screen .video-container {
+            height: 100vh;
+            padding-bottom: 0;
+        }
+        .sticky-player:fullscreen #mainView,
+        .sticky-player:-webkit-full-screen #mainView {
+            height: 100% !important;
+        }
+        .sticky-player:fullscreen .custom-controls,
+        .sticky-player:-webkit-full-screen .custom-controls {
+            padding-bottom: max(10px, env(safe-area-inset-bottom, 20px));
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%;
+            background: #111;
+            overflow: hidden;
+            transform: translateZ(0)
+        }
+        .video-container iframe,
+        .video-container #mainView {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0
+        }
+        .player-shield {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            background: 0 0;
+            cursor: default
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #ffcc00;
+            background: #111;
+            border-bottom: 1px solid #333;
+            letter-spacing: 1px;
+            box-sizing: border-box;
+            gap: 6px;
+            flex-wrap: nowrap
+        }
+        .app-video-loader {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            transform: translateY(-50%) translateZ(0);
+            background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .85) 15%, rgba(0, 0, 0, .95) 50%, rgba(0, 0, 0, .85) 85%, transparent 100%);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 11;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity .4s, transform .4s;
+            pointer-events: auto;
+            opacity: 1;
+            will-change: opacity, transform
+        }
+        .app-video-loader.hide-loader {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-50%) scale(.95)
+        }
+        .audio-visualizer-track {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            width: 85%;
+            height: 100%;
+            position: relative
+        }
+        .audio-visualizer-track::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            width: 90%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #e01b5d, #ffcc00, #e01b5d, transparent);
+            box-shadow: 0 0 14px #ffcc00, 0 0 4px #e01b5d;
+            transform: translateY(-50%);
+            z-index: 1;
+            opacity: .85
+        }
+        .eq-bar {
+            width: 3.5px;
+            height: 20px;
+            background: linear-gradient(to top, #9c27b0, #e01b5d, #ffcc00);
+            border-radius: 2px;
+            z-index: 2;
+            transform: scaleY(1) translateZ(0);
+            box-shadow: 0 0 3px rgba(255, 204, 0, .2);
+            transition: transform .2s, height .2s;
+            will-change: transform
+        }
+        .app-video-loader:not(.paused-loader) .eq-bar {
+            animation: bounceEQ 1s ease-in-out infinite alternate
+        }
+        .app-video-loader.paused-loader .eq-bar {
+            animation: none !important;
+            height: 10px !important;
+            opacity: .5;
+            transform: scaleY(1) !important
+        }
+        .eq-bar:nth-child(2n) {
+            animation-delay: .1s;
+            height: 45px
+        }
+        .eq-bar:nth-child(3n) {
+            animation-delay: .35s;
+            height: 25px;
+            background: linear-gradient(to top, #e01b5d, #ffcc00)
+        }
+        .eq-bar:nth-child(4n) {
+            animation-delay: .2s;
+            height: 55px
+        }
+        .eq-bar:nth-child(5n) {
+            animation-delay: .5s;
+            height: 30px
+        }
+        .eq-bar:nth-child(6n+1) {
+            animation-delay: .15s;
+            height: 48px
+        }
+        @keyframes bounceEQ {
+            0% {
+                transform: scaleY(.25) translateZ(0)
+            }
+            to {
+                transform: scaleY(1.15) translateZ(0);
+                filter: drop-shadow(0 0 5px #ffcc00)
+            }
+        }
+        .custom-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 1), rgba(0, 0, 0, .95) 70%, rgba(0, 0, 0, .4) 95%, transparent);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 8px;
+            gap: 18px;
+            z-index: 12;
+            box-sizing: border-box;
+            transition: transform .4s cubic-bezier(.19, 1, .22, 1), opacity .4s;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto
+        }
+        .custom-controls.hide-controls {
+            transform: translateY(100%) !important;
+            opacity: 0 !important;
+            pointer-events: none !important
+        }
+        .control-btn {
+            background: 0;
+            border: 0;
+            fill: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            transition: transform .2s, fill .2s;
+            padding: 0;
+            touch-action: manipulation;
+            position: relative
+        }
+        .control-btn.play-btn {
+            width: 36px;
+            height: 36px;
+            fill: #000;
+            background: #ffcc00;
+            border-radius: 50%;
+            padding: 6px;
+            filter: drop-shadow(0 0 6px rgba(255, 204, 0, .5))
+        }
+        .control-btn:hover {
+            transform: scale(1.1);
+            fill: #ffcc00
+        }
+        .control-btn.play-btn:hover {
+            transform: scale(1.1);
+            background: #fff;
+            fill: #000;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, .7))
+        }
+        .control-btn:active {
+            transform: scale(.9)
+        }
+        .control-btn svg {
+            width: 100%;
+            height: 100%;
+            display: block
+        }
+        .control-btn.toggle-active {
+            fill: #ffcc00;
+            filter: drop-shadow(0 0 5px rgba(255, 204, 0, .6))
+        }
+        .control-btn.toggle-active::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #ffcc00;
+            box-shadow: 0 0 4px #ffcc00
+        }
+        .marquee-container {
+            flex-grow: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            display: flex;
+            align-items: center;
+            min-width: 0
+        }
+        .marquee-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 12s linear infinite;
+            will-change: transform
+        }
+        @keyframes marquee {
+            0% {
+                transform: translate3d(0, 0, 0)
+            }
+            to {
+                transform: translate3d(-100%, 0, 0)
+            }
+        }
+        .logo-section {
+            padding: 14px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(160deg, #141414, #000 65%);
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid #1c1c1c
+        }
+        .logo-section::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            left: -10%;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(255, 204, 0, .14), transparent 70%);
+            pointer-events: none
+        }
+        .logo-left {
+            display: flex;
+            align-items: center;
+            position: relative;
+            z-index: 1
+        }
+        .logo-section img {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1.5px solid #ffcc00;
+            margin-right: 12px;
+            object-fit: cover;
+            box-shadow: 0 0 14px rgba(255, 204, 0, .25)
+        }
+        .logo-section h1 {
+            background: linear-gradient(90deg, #ffcc00, #ffe066 40%, #ffcc00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: clamp(16px, 4vw, 19px);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            font-weight: 900
+        }
+        .pro-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: linear-gradient(135deg, #9c27b0, #e01b5d);
+            color: #fff;
+            font-size: 8px;
+            font-weight: 900;
+            padding: 2px 7px;
+            border-radius: 20px;
+            letter-spacing: .5px;
+            margin-left: 8px;
+            vertical-align: middle;
+            box-shadow: 0 0 10px rgba(224, 27, 93, .4)
+        }
+        .streak-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 10px;
+            font-weight: 800;
+            color: #ffcc00;
+            background: rgba(255, 204, 0, .08);
+            border: 1px solid rgba(255, 204, 0, .35);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-top: 4px;
+            position: relative;
+            z-index: 1;
+            white-space: nowrap
+        }
+        .data-saver-btn {
+            background: #1a1a1a;
+            color: #ffcc00;
+            border: 1px solid #ffcc00;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 8px;
+            text-transform: uppercase;
+            cursor: pointer;
+            font-weight: 800;
+            touch-action: manipulation;
+            transition: .15s
+        }
+        .data-saver-btn:active {
+            transform: scale(.94);
+            background: #ffcc00;
+            color: #000
+        }
+        .rotate-fav-btn {
+            background: #1a1a1a;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+        .rotate-fav-btn.active {
+            background: #ff6b6b;
+            color: #000;
+            border-color: #ff6b6b;
+        }
+
+        .search-container {
+            padding: 10px 12px;
+            background: #0a0a0a;
+            border-bottom: 1px solid #222;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            box-sizing: border-box;
+            width: 100%;
+            position: relative
+        }
+        .search-input {
+            flex: 1;
+            min-width: 0;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 8px 12px;
+            border-radius: 30px;
+            color: #fff;
+            font-size: clamp(12px, 3vw, 14px);
+            outline: 0;
+            transition: .2s;
+            box-sizing: border-box
+        }
+        .search-input:focus {
+            border-color: #ffcc00;
+            box-shadow: 0 0 0 3px rgba(255, 204, 0, .12)
+        }
+        .search-btn {
+            flex-shrink: 0;
+            background: #ffcc00;
+            border: 0;
+            padding: 8px 14px;
+            border-radius: 30px;
+            font-weight: 700;
+            color: #000;
+            cursor: pointer;
+            transition: .2s;
+            font-size: clamp(11px, 2.5vw, 13px);
+            box-sizing: border-box;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation
+        }
+        .search-btn:active {
+            transform: scale(.96)
+        }
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 12px;
+            right: 12px;
+            background: #161616;
+            border: 1px solid #333;
+            border-radius: 12px;
+            margin-top: 4px;
+            z-index: 500;
+            overflow: hidden;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .6)
+        }
+        .search-suggestions.active {
+            display: block
+        }
+        .search-suggestions .sugg-item {
+            padding: 9px 14px;
+            font-size: 12px;
+            color: #ccc;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #222
+        }
+        .search-suggestions .sugg-item:last-child {
+            border-bottom: 0
+        }
+        .search-suggestions .sugg-item:active {
+            background: #222
+        }
+        .search-results-row {
+            margin-bottom: 16px
+        }
+        .category-title {
+            font-size: clamp(12px, 3vw, 14px);
+            color: #fff;
+            text-transform: uppercase;
+            margin: 20px 12px 10px;
+            font-weight: 900;
+            border-left: 4px solid #ffcc00;
+            padding-left: 10px;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+        .category-title .cat-sub {
+            font-size: 9px;
+            color: #666;
+            text-transform: none;
+            letter-spacing: .3px;
+            font-weight: 500
+        }
+        .video-row {
+            display: flex;
+            overflow-x: auto;
+            padding: 0 12px 12px;
+            gap: 12px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            -webkit-overflow-scrolling: touch
+        }
+        .video-row::-webkit-scrollbar {
+            display: none
+        }
+        .card {
+            flex: 0 0 130px;
+            width: 130px;
+            cursor: pointer;
+            transition: transform .2s, box-shadow .2s;
+            touch-action: manipulation;
+            position: relative;
+            border-radius: 10px
+        }
+        .card:active {
+            transform: scale(.95)
+        }
+        .card:hover {
+            transform: translateY(-3px)
+        }
+        .card img {
+            width: 100%;
+            height: 75px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #222;
+            display: block;
+            transition: box-shadow .2s
+        }
+        .card:hover img {
+            box-shadow: 0 6px 18px rgba(255, 204, 0, .18);
+            border-color: #ffcc00
+        }
+        .card p {
+            font-size: 10px;
+            margin: 6px 0 0;
+            color: #ccc;
+            line-height: 1.3;
+            font-weight: 500;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal
+        }
+        .card.now-playing-card {
+            outline: 2px solid #ffcc00;
+            box-shadow: 0 0 14px rgba(255, 204, 0, .35)
+        }
+        .card .like-heart {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 0, 0, .55);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            z-index: 6;
+            transition: transform .15s
+        }
+        .card .like-heart:active {
+            transform: scale(1.3)
+        }
+        .card .like-heart.liked {
+            filter: drop-shadow(0 0 3px #e01b5d)
+        }
+        body.data-saver-active img {
+            display: none !important
+        }
+        body.data-saver-active .card {
+            flex: 0 0 120px;
+            width: 120px;
+            background: #111;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #333
+        }
+        body.data-saver-active .card p {
+            display: block;
+            overflow: visible;
+            -webkit-line-clamp: unset;
+            height: auto;
+            margin: 0
+        }
+        .rank-badge {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            background: #ffcc00;
+            color: #000;
+            font-weight: 900;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            z-index: 5
+        }
+        .skel-card {
+            flex: 0 0 130px;
+            width: 130px
+        }
+        .skel-thumb {
+            width: 100%;
+            height: 75px;
+            border-radius: 8px;
+            background: linear-gradient(100deg, #141414 8%, #232323 18%, #141414 33%);
+            background-size: 300% 100%;
+            animation: shimmer 1.4s ease-in-out infinite
+        }
+        .skel-line {
+            height: 9px;
+            border-radius: 4px;
+            margin-top: 8px;
+            background: linear-gradient(100deg, #141414 8%, #232323 18%, #141414 33%);
+            background-size: 300% 100%;
+            animation: shimmer 1.4s ease-in-out infinite
+        }
+        .skel-line.short {
+            width: 60%
+        }
+        @keyframes shimmer {
+            0% {
+                background-position: 100% 0
+            }
+            to {
+                background-position: -100% 0
+            }
+        }
+        .footer-text {
+            text-align: center;
+            padding: 40px 16px;
+            color: #444;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px
+        }
+        .disclaimer-block {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 16px;
+            color: #666;
+            font-size: 9px;
+            text-transform: none;
+            line-height: 1.5;
+            text-align: center;
+            font-weight: 400;
+            letter-spacing: .5px
+        }
+        .pull-refresh-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #ffcc00, #e01b5d, #ffcc00);
+            z-index: 10000;
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: transform .1s, opacity .3s;
+            opacity: 0
+        }
+        .pull-refresh-indicator.loading {
+            animation: refreshBar 1.5s linear infinite;
+            opacity: 1;
+            transform: scaleX(1)
+        }
+        @keyframes refreshBar {
+            0% {
+                background-position: 0 0;
+                transform: scaleX(.1)
+            }
+            50% {
+                transform: scaleX(1)
+            }
+            to {
+                background-position: 100% 0;
+                transform: scaleX(.1)
+            }
+        }
+        @media(max-width:480px) {
+            .card {
+                flex: 0 0 110px;
+                width: 110px
+            }
+            .card img {
+                height: 62px
+            }
+            .search-container {
+                padding: 8px 10px
+            }
+            .search-input {
+                font-size: 12px;
+                padding: 6px 10px
+            }
+            .search-btn {
+                font-size: 11px;
+                padding: 6px 10px
+            }
+            .logo-section img {
+                width: 32px;
+                height: 32px
+            }
+            .logo-section h1 {
+                font-size: 15px
+            }
+            .status-bar {
+                font-size: 9px;
+                padding: 6px 10px
+            }
+            .custom-controls {
+                gap: 14px;
+                padding: 8px
+            }
+            .control-btn {
+                width: 22px;
+                height: 22px
+            }
+            .control-btn.play-btn {
+                width: 30px;
+                height: 30px
+            }
+            .app-video-loader {
+                height: 60px
+            }
+            .eq-bar {
+                width: 3px
+            }
+            .category-title {
+                font-size: 12px;
+                margin: 16px 10px 8px
+            }
+            body {
+                padding-bottom: 150px;
+            }
+        }
+
+        /* ===== SPONSORED CARD – enhanced ===== */
+        .sponsored-card {
+            flex: 0 0 130px;
+            width: 130px;
+            background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+            border: 2px solid #ffcc00;
+            border-radius: 12px;
+            padding: 8px 6px 6px;
+            cursor: pointer;
+            transition: all 0.25s;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .sponsored-card::after {
+            content: '★ SPONSORED';
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: #ffcc00;
+            color: #000;
+            font-size: 6px;
+            font-weight: 900;
+            padding: 2px 6px;
+            border-radius: 10px;
+            letter-spacing: 0.5px;
+            animation: pulseBadge 2s infinite;
+        }
+        @keyframes pulseBadge {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+        .sponsored-card .icon {
+            font-size: 32px;
+            margin: 6px 0 4px;
+            display: block;
+            filter: drop-shadow(0 0 8px rgba(255, 204, 0, 0.4));
+        }
+        .sponsored-card p {
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            margin: 2px 0 0;
+            line-height: 1.2;
+            text-shadow: 0 0 8px rgba(255, 204, 0, 0.2);
+        }
+        .sponsored-card .sub {
+            color: #aaa;
+            font-size: 8px;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+        .sponsored-card:active {
+            transform: scale(0.95);
+        }
+        .sponsored-card:hover {
+            border-color: #ffe066;
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .utility-btn {
+            background: #1a1a1a;
+            color: #ffcc00;
+            border: 1px solid #ffcc00;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 8px;
+            text-transform: uppercase;
+            cursor: pointer;
+            font-weight: 800;
+            touch-action: manipulation;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            letter-spacing: 0.3px;
+        }
+        .utility-btn:active {
+            transform: scale(0.94);
+            background: #ffcc00;
+            color: #000;
+        }
+        .utility-btn .emoji {
+            font-size: 12px;
+        }
+        .logo-section .right-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            position: relative;
+            z-index: 1;
+        }
+        @media (max-width: 480px) {
+            .sponsored-card {
+                flex: 0 0 100px;
+                width: 100px;
+            }
+            .sponsored-card .icon {
+                font-size: 26px;
+            }
+            .utility-btn {
+                font-size: 7px;
+                padding: 3px 8px;
+            }
+        }
+
+        /* ===== SPONSOR GATEWAY MODAL – enhanced ===== */
+        .sponsor-gateway {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.94);
+            z-index: 30000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(16px);
+            animation: fadeInUp 0.3s ease-out;
+        }
+        .sponsor-gateway.active {
+            display: flex;
+        }
+        .sponsor-gateway .gateway-card {
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 2px solid #ffcc00;
+            border-radius: 32px;
+            max-width: 420px;
+            width: 92%;
+            padding: 34px 24px 28px;
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9), 0 0 60px rgba(255, 204, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .sponsor-gateway .gateway-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(255, 204, 0, 0.04), transparent 60%);
+            pointer-events: none;
+        }
+        .sponsor-gateway .gateway-icon {
+            font-size: 52px;
+            margin-bottom: 6px;
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+        @keyframes floatIcon {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+        .sponsor-gateway h2 {
+            color: #ffcc00;
+            font-size: clamp(22px, 5vw, 28px);
+            font-weight: 900;
+            margin: 0 0 6px;
+            letter-spacing: 1px;
+            position: relative;
+        }
+        .sponsor-gateway .subtitle {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 16px;
+            font-weight: 400;
+        }
+        .sponsor-gateway .benefits {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin: 10px 0 18px;
+            flex-wrap: wrap;
+        }
+        .sponsor-gateway .benefits span {
+            background: rgba(255, 204, 0, 0.08);
+            border: 1px solid rgba(255, 204, 0, 0.15);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 10px;
+            color: #ccc;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .sponsor-gateway .benefits span .emoji {
+            font-size: 14px;
+        }
+        .sponsor-gateway p {
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 4px 0 16px;
+            position: relative;
+        }
+        .sponsor-gateway .gateway-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .sponsor-gateway .gateway-btn {
+            padding: 15px;
+            border-radius: 60px;
+            font-weight: 800;
+            font-size: 15px;
+            border: 0;
+            cursor: pointer;
+            transition: all .2s;
+            touch-action: manipulation;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            position: relative;
+        }
+        .sponsor-gateway .gateway-btn:active {
+            transform: scale(.96);
+        }
+        .sponsor-gateway .gateway-btn.primary {
+            background: linear-gradient(135deg, #ffcc00, #f5a623);
+            color: #000;
+            box-shadow: 0 4px 30px rgba(255, 204, 0, 0.3);
+        }
+        .sponsor-gateway .gateway-btn.primary:hover {
+            box-shadow: 0 4px 40px rgba(255, 204, 0, 0.5);
+            transform: translateY(-1px);
+        }
+        .sponsor-gateway .gateway-btn.primary .badge {
+            background: #000;
+            color: #ffcc00;
+            border-radius: 12px;
+            padding: 0 8px;
+            font-size: 9px;
+            margin-left: 6px;
+        }
+        .sponsor-gateway .gateway-btn.secondary {
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+        }
+        .sponsor-gateway .gateway-btn.secondary:hover {
+            background: #3a3a3a;
+        }
+        .sponsor-gateway .gateway-btn.secondary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .sponsor-gateway .gateway-skip {
+            margin-top: 14px;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+            transition: color .2s;
+            background: none;
+            border: 0;
+            padding: 6px 12px;
+        }
+        .sponsor-gateway .gateway-skip:hover {
+            color: #aaa;
+        }
+        .sponsor-gateway .gateway-skip.hidden {
+            display: none;
+        }
+        .sponsor-gateway .countdown-bar {
+            width: 100%;
+            height: 3px;
+            background: #222;
+            border-radius: 4px;
+            margin: 10px 0 12px;
+            overflow: hidden;
+        }
+        .sponsor-gateway .countdown-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffcc00, #f5a623);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(24px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ===== BOTTOM BANNER AD – NEW ===== */
+        .bottom-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 20000;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.92), #0a0a0a);
+            border-top: 2px solid #ffcc00;
+            padding: 6px 10px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: transform 0.3s ease;
+        }
+        .bottom-banner.hidden {
+            transform: translateY(100%);
+        }
+        .bottom-banner .banner-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+            cursor: pointer;
+        }
+        .bottom-banner .banner-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+            animation: pulseIcon 2s infinite;
+        }
+        @keyframes pulseIcon {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        .bottom-banner .banner-text {
+            flex: 1;
+            min-width: 0;
+        }
+        .bottom-banner .banner-text .title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #ffcc00;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .bottom-banner .banner-text .desc {
+            font-size: 9px;
+            color: #999;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .bottom-banner .banner-cta {
+            background: linear-gradient(135deg, #ffcc00, #f5a623);
+            color: #000;
+            border: 0;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 10px;
+            text-transform: uppercase;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+            touch-action: manipulation;
+        }
+        .bottom-banner .banner-cta:active {
+            transform: scale(0.94);
+        }
+        .bottom-banner .banner-cta:hover {
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.3);
+        }
+        .bottom-banner .banner-close {
+            background: none;
+            border: 0;
+            color: #666;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 0 4px;
+            flex-shrink: 0;
+            transition: color 0.2s;
+        }
+        .bottom-banner .banner-close:hover {
+            color: #fff;
+        }
+        @media (max-width: 480px) {
+            .bottom-banner {
+                padding: 4px 8px 6px;
+            }
+            .bottom-banner .banner-icon {
+                font-size: 18px;
+            }
+            .bottom-banner .banner-text .title {
+                font-size: 9px;
+            }
+            .bottom-banner .banner-text .desc {
+                font-size: 7px;
+            }
+            .bottom-banner .banner-cta {
+                font-size: 8px;
+                padding: 4px 10px;
+            }
+        }
+
+        /* ===== AD CLICK COUNTER ===== */
+        .ad-stats {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 204, 0, 0.06);
+            border: 1px solid rgba(255, 204, 0, 0.12);
+            padding: 2px 10px;
+            border-radius: 16px;
+            font-size: 8px;
+            color: #ffcc00;
+            font-weight: 600;
+        }
+        .ad-stats .num {
+            color: #fff;
+            font-weight: 900;
+            font-size: 10px;
+        }
+        .ad-stats .label {
+            color: #888;
+            font-weight: 400;
+        }
+
+        /* ===== SONG COUNTER BADGE ===== */
+        .song-counter {
+            background: rgba(255, 204, 0, 0.15);
+            border: 1px solid rgba(255, 204, 0, 0.3);
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 9px;
+            color: #ffcc00;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+        .song-counter .count {
+            color: #fff;
+            font-size: 11px;
+        }
+
+        /* ===== ACHIEVEMENT TOAST ===== */
+        .achievement-toast {
+            position: fixed;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-140%);
+            background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+            border: 1.5px solid #ffcc00;
+            border-radius: 18px;
+            padding: 12px 20px;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .7), 0 0 24px rgba(255, 204, 0, .25);
+            transition: transform .5s cubic-bezier(.19, 1, .22, 1);
+            max-width: 88%
+        }
+        .achievement-toast.show {
+            transform: translateX(-50%) translateY(0)
+        }
+        .achievement-toast .ach-icon {
+            font-size: 26px;
+            filter: drop-shadow(0 0 6px rgba(255, 204, 0, .5))
+        }
+        .achievement-toast .ach-title {
+            color: #ffcc00;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .5px
+        }
+        .achievement-toast .ach-sub {
+            color: #aaa;
+            font-size: 10px;
+            margin-top: 1px
+        }
+
+        /* ===== LIVE USERS COUNTER ===== */
+        .live-users-badge-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255, 0, 0, 0.10);
+            border: 1px solid rgba(255, 80, 80, 0.25);
+            padding: 3px 10px 3px 6px;
+            border-radius: 30px;
+            font-size: 9px;
+            font-weight: 700;
+            color: #ff6b6b;
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+        .live-users-badge-header .live-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background: #ff3b3b;
+            border-radius: 50%;
+            margin-right: 2px;
+            animation: blink 1.4s infinite;
+            box-shadow: 0 0 6px rgba(255, 0, 0, 0.6);
+        }
+        .live-users-badge-header .num {
+            color: #fff;
+            font-weight: 900;
+            font-size: 11px;
+            min-width: 18px;
+            display: inline-block;
+            text-align: center;
+        }
+        @keyframes blink {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+        }
+        @keyframes pulseGlow {
+            0%,
+            100% {
+                box-shadow: 0 0 4px rgba(255, 80, 80, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 12px rgba(255, 80, 80, 0.4);
+            }
+        }
+
+        .daily-users-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 215, 0, 0.08);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            padding: 3px 10px 3px 8px;
+            border-radius: 30px;
+            font-size: 9px;
+            font-weight: 700;
+            color: #ffcc00;
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+            margin-left: 4px;
+        }
+        .daily-users-badge .num {
+            color: #fff;
+            font-weight: 900;
+            font-size: 11px;
+            min-width: 14px;
+            display: inline-block;
+            text-align: center;
+        }
+        @media (max-width: 480px) {
+            .daily-users-badge {
+                font-size: 7px;
+                padding: 2px 6px;
+            }
+            .daily-users-badge .num {
+                font-size: 9px;
+                min-width: 12px;
+            }
+        }
+
+        /* ===== AD REWARD TOAST ===== */
+        .reward-toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: linear-gradient(135deg, #1a3a1a, #0a1a0a);
+            border: 1.5px solid #4caf50;
+            border-radius: 16px;
+            padding: 10px 20px;
+            z-index: 99998;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .6);
+            transition: all 0.4s cubic-bezier(.19, 1, .22, 1);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .reward-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .reward-toast .r-icon {
+            font-size: 22px;
+        }
+        .reward-toast .r-text {
+            color: #ccc;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .reward-toast .r-text strong {
+            color: #4caf50;
+        }
+
+        /* interstitial overlay */
+        .interstitial-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 40000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(12px);
+            animation: fadeInUp 0.2s ease-out;
+        }
+        .interstitial-overlay.active {
+            display: flex;
+        }
+        .interstitial-overlay .interstitial-card {
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 2px solid #ffcc00;
+            border-radius: 28px;
+            max-width: 380px;
+            width: 90%;
+            padding: 30px 20px 24px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9);
+        }
+        .interstitial-overlay .interstitial-card .big-icon {
+            font-size: 56px;
+            margin-bottom: 6px;
+        }
+        .interstitial-overlay .interstitial-card h3 {
+            color: #ffcc00;
+            font-size: 20px;
+            font-weight: 900;
+            margin: 0 0 4px;
+        }
+        .interstitial-overlay .interstitial-card p {
+            color: #aaa;
+            font-size: 13px;
+            margin: 4px 0 16px;
+        }
+        .interstitial-overlay .interstitial-card .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .interstitial-overlay .interstitial-card .btn-group .btn {
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: 800;
+            font-size: 14px;
+            border: 0;
+            cursor: pointer;
+            transition: all .2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .interstitial-overlay .interstitial-card .btn-group .btn.primary {
+            background: #ffcc00;
+            color: #000;
+            box-shadow: 0 4px 20px rgba(255, 204, 0, 0.25);
+        }
+        .interstitial-overlay .interstitial-card .btn-group .btn.secondary {
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+        }
+        .interstitial-overlay .interstitial-card .btn-group .btn:active {
+            transform: scale(.95);
+        }
+        .interstitial-overlay .interstitial-card .timer-text {
+            color: #666;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="pull-refresh-indicator" id="refreshIndicator"></div>
+    <div class="achievement-toast" id="achievementToast">
+        <span class="ach-icon" id="achIcon">🏆</span>
+        <div>
+            <div class="ach-title" id="achTitle">Milestone!</div>
+            <div class="ach-sub" id="achSub"></div>
+        </div>
+    </div>
+
+    <div class="sticky-player" id="playerSection">
+        <div class="video-container" id="videoContainer">
+            <div id="mainView"></div>
+            <div class="player-shield"></div>
+            <div class="app-video-loader" id="appVideoLoader">
+                <div class="audio-visualizer-track">
+                    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                    <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                </div>
+            </div>
+            <div class="custom-controls" id="customControls">
+                <button class="control-btn" id="shuffleBtn" onclick="toggleShuffle()" title="Shuffle">
+                    <svg viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"></path></svg>
+                </button>
+                <button class="control-btn" onclick="customSeek(-10)" title="Rewind 10s">
+                    <svg viewBox="0 0 24 24"><path d="M11.99 5V1l-5 5 5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6h-2c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8zm-1.1 8.55v-2.3h-.14l-.65.46.18.47.41-.28v1.65h.3zm1.88-1.57c0-.28-.04-.51-.12-.68a.63.63 0 0 0-.32-.3c-.13-.05-.3-.08-.48-.08s-.34.03-.47.08a.65.65 0 0 0-.32.3c-.08.17-.12.4-.12.68v.83c0 .28.04.51.12.68a.68.68 0 0 0 .33.31c.14.05.3.08.47.08s.33-.03.46-.08a.68.68 0 0 0 .33-.31c.08-.17.12-.4.12-.68v-.83zm-.33.86c0 .19-.02.33-.05.42-.03.1-.08.16-.14.2a.26.26 0 0 1-.16.06c-.06 0-.12-.02-.16-.06a.28.28 0 0 1-.13-.2c-.04-.09-.05-.23-.05-.42v-.89c0-.19.01-.33.05-.42.03-.1.08-.16.14-.2.05-.04.1-.06.16-.06.07 0 .12.02.16.06.05.04.09.1.13.2.03.09.05.23.05.42v.89z"></path></svg>
+                </button>
+                <button class="control-btn play-btn" onclick="togglePlayPause()" id="playPauseBtn">
+                    <svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+                </button>
+                <button class="control-btn" onclick="customSeek(10)" title="Fast Forward 10s">
+                    <svg viewBox="0 0 24 24"><path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8zm-1.1 8.55v-2.3h-.14l-.65.46.18.47.41-.28v1.65h.3zm1.88-1.57c0-.28-.04-.51-.12-.68a.63.63 0 0 0-.32-.3c-.13-.05-.3-.08-.48-.08s-.34.03-.47.08a.65.65 0 0 0-.32.3c-.08.17-.12.4-.12.68v.83c0 .28.04.51.12.68a.68.68 0 0 0 .33.31c.14.05.3.08.47.08s.33-.03.46-.08a.68.68 0 0 0 .33-.31c.08-.17.12-.4.12-.68v-.83zm-.33.86c0 .19-.02.33-.05.42-.03.1-.08.16-.14.2a.26.26 0 0 1-.16.06c-.06 0-.12-.02-.16-.06a.28.28 0 0 1-.13-.2c-.04-.09-.05-.23-.05-.42v-.89c0-.19.01-.33.05-.42.03-.1.08-.16.14-.2.05-.04.1-.06.16-.06.07 0 .12.02.16.06.05.04.09.1.13.2.03.09.05.23.05.42v.89z"></path></svg>
+                </button>
+                <button class="control-btn" id="repeatBtn" onclick="toggleRepeat()" title="Repeat">
+                    <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div class="status-bar">
+            <div class="marquee-container"><span id="playingTitle" class="marquee-text">NOW PLAYING: BOLO PULSE</span></div>
+            <span id="videoTimer" style="flex-shrink:0;margin-left:8px;font-family:monospace;font-size:10px;font-weight:700;">0:00 / 0:00</span>
+            <span id="watchTime" style="flex-shrink:0;margin-left:8px;">SESSION: 0M</span>
+            <span class="song-counter" id="songCounter">🎵 <span class="count" id="songCountDisplay">0</span> played</span>
+            <span class="ad-stats" id="adStats">📈 <span class="num" id="adClickCount">0</span> <span class="label">clicks</span></span>
+        </div>
+    </div>
+
+    <div class="logo-section">
+        <div class="logo-left">
+            <img src="https://lephikaprojects-star.github.io/afrikabelo-pwa/android-chrome-192x192.png" loading="lazy" alt="logo">
+            <div>
+                <div><h1 style="display:inline-block;">PULSE</h1><span class="pro-badge">⚡ PRO</span></div>
+                <div class="streak-badge" id="streakBadge" style="display:none;">🔥 <span id="streakCount">0</span> day streak</div>
+            </div>
+        </div>
+        <div class="right-actions">
+            <span class="live-users-badge-header" id="liveUsersBadgeHeader">
+                <span class="live-dot"></span>
+                <span class="num" id="liveUserCountHeader">0</span> online
+            </span>
+            <span class="daily-users-badge" id="dailyUsersBadge">
+                📅 Today: <span class="num" id="dailyUserCount">0</span>
+            </span>
+            <button class="data-saver-btn" onclick="toggleFullScreen()">Full Screen 🔄</button>
+            <button class="data-saver-btn" id="dataSaverToggleBtn" onclick="toggleDataSaver()">Data Saver: OFF</button>
+            <button class="data-saver-btn rotate-fav-btn" id="rotateFavBtn" onclick="toggleFavRotation()">🎵 ROTATE FAV</button>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search for music, artists, songs..." onkeypress="if(event.key==='Enter') searchMusic()" oninput="handleSearchInput()" onfocus="handleSearchInput()">
+        <button class="search-btn" onclick="searchMusic()">🔍 Search</button>
+        <div class="search-suggestions" id="searchSuggestions"></div>
+    </div>
+    <div id="searchResultsSection" style="display:none;">
+        <div class="category-title" style="color:#ffcc00;">🔎 Search Results</div>
+        <div id="searchResultsRow" class="video-row"></div>
+    </div>
+
+    <div id="recentlyPlayedSection" style="display:none;">
+        <div class="category-title" style="color:#ffcc00;">🕒 Continue Listening <span class="cat-sub">recently played</span></div>
+        <div id="row-recent" class="video-row"></div>
+    </div>
+
+    <div id="favoritesSection" style="display:none;">
+        <div class="category-title" style="color:#ffcc00;">⭐ Your Auto Favorites</div>
+        <div id="row-favorites" class="video-row"></div>
+    </div>
+
+    <!-- ===== ROWS ===== -->
+    <div class="category-title" style="color:#ffcc00;">✨ Bolo House Classics</div>
+    <div id="row-1" class="video-row"></div>
+
+    <div class="category-title" style="color:#ffcc00;">🔥 This Week's Top 10 Hits</div><div id="row-2" class="video-row"></div>
+    <div class="category-title" style="color:#ffcc00;">📈 Top 10 Lekompo Hits</div><div id="row-3" class="video-row"></div>
+    <div class="category-title">📅 Trending This Month</div><div id="row-4" class="video-row"></div>
+    <div class="category-title">Number One Songs</div><div id="row-5" class="video-row"></div>
+    <div class="category-title">Featured Hits</div><div id="row-6" class="video-row"></div>
+    <div class="category-title">King Monada Essentials</div><div id="row-7" class="video-row"></div>
+    <div class="category-title">Bolo House Anthems</div><div id="row-8" class="video-row"></div>
+    <div class="category-title">Mix Tapes</div><div id="row-10" class="video-row"></div>
+    <div class="category-title">Artist Spotlights</div><div id="row-11" class="video-row"></div>
+    <div class="category-title">Bolo Pulse Archive</div><div id="row-13" class="video-row"></div>
+    <div class="category-title" style="color:#ffcc00;">🎵 Xitsonga Hits</div><div id="row-14" class="video-row"></div>
+    <div class="category-title">Amapiano</div><div id="row-9" class="video-row"></div>
+    <div class="category-title">Maskandi</div><div id="row-12" class="video-row"></div>
+    <div class="category-title" style="color:#ffcc00;">Gospel</div><div id="row-15" class="video-row"></div>
+
+    <div class="disclaimer-block">
+        Disclaimer: This platform aggregates public media content streamed directly via third-party APIs including the official YouTube Embed Player. All video rights, trademarks, and copyrights belong exclusively to their respective owners and creators. This app does not host, modify, or permanently store any video files.
+    </div>
+    <div class="footer-text">BOLO TV • KUTULLO ANGEL MEDIA • 2026</div>
+
+    <!-- ===== SPONSOR GATEWAY MODAL (enhanced) ===== -->
+    <div class="sponsor-gateway" id="sponsorGateway">
+        <div class="gateway-card">
+            <div class="gateway-icon">🎧</div>
+            <h2>Keep BOLO Free</h2>
+            <div class="subtitle">Support the music you love</div>
+            <div class="benefits">
+                <span><span class="emoji">🚀</span> No interruptions</span>
+                <span><span class="emoji">🎵</span> More music</span>
+                <span><span class="emoji">❤️</span> Support creators</span>
+            </div>
+            <p><strong id="gatewaySongCount">0</strong> songs enjoyed so far! A quick visit helps keep BOLO Pulse ad-light.</p>
+            <div class="countdown-bar"><div class="fill" id="gatewayCountdownFill"></div></div>
+            <div class="gateway-buttons">
+                <button class="gateway-btn primary" id="gatewayVisitSponsor">🌟 Support BOLO & Continue <span class="badge">⚡</span></button>
+                <button class="gateway-btn secondary" id="gatewayContinueDirect" disabled>⏳ Wait <span id="gatewayTimerSec">5</span>s to skip</button>
+            </div>
+            <button class="gateway-skip hidden" id="gatewaySkipAll">✕ Skip for now</button>
+        </div>
+    </div>
+
+    <!-- ===== INTERSTITIAL AD OVERLAY ===== -->
+    <div class="interstitial-overlay" id="interstitialOverlay">
+        <div class="interstitial-card">
+            <div class="big-icon">🎵</div>
+            <h3>Enjoying the vibes?</h3>
+            <p>Support BOLO Pulse with a quick visit — it takes 5 seconds!</p>
+            <div class="btn-group">
+                <button class="btn primary" id="interstitialVisitBtn">🌟 Support BOLO</button>
+                <button class="btn secondary" id="interstitialSkipBtn">⏩ Continue listening</button>
+            </div>
+            <div class="timer-text" id="interstitialTimerText">⏱️ 5s</div>
+        </div>
+    </div>
+
+    <!-- ===== BOTTOM BANNER AD ===== -->
+    <div class="bottom-banner" id="bottomBanner">
+        <div class="banner-content" id="bannerContent">
+            <span class="banner-icon">🔥</span>
+            <div class="banner-text">
+                <div class="title" id="bannerTitle">🎵 Support BOLO Pulse</div>
+                <div class="desc" id="bannerDesc">Visit our sponsor & keep the music flowing</div>
+            </div>
+        </div>
+        <button class="banner-cta" id="bannerCta">Support →</button>
+        <button class="banner-close" id="bannerClose">✕</button>
+    </div>
+
+    <!-- ===== REWARD TOAST ===== -->
+    <div class="reward-toast" id="rewardToast">
+        <span class="r-icon">🎁</span>
+        <span class="r-text">Thanks for supporting! <strong>Next ad skipped!</strong></span>
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js">
+    </script>
+
+    <script>
+        // ================================================================
+        //  BOLO PULSE PRO – FULL MONETIZATION UPGRADE
+        //  Monetag link: https://omg10.com/4/11060984
+        //  Adsterra fallback: https://everybodycollecteagle.com/tmadq5gn43...
+        //  Strategies:
+        //    - Gateway every 3 songs (was 10) with mandatory 5s wait
+        //    - Bottom banner ad (persistent, low friction)
+        //    - Interstitial ad between every 5th song
+        //    - Multiple sponsored cards (2 rows)
+        //    - Ad click counter + rewards (skip next ad)
+        //    - Click tracking & user feedback
+        // ================================================================
+
+        (function() {
+            'use strict';
+
+            // -------- MONETIZATION CONFIG --------
+            const MONETAG_LINK = 'https://omg10.com/4/11060984';
+            const ADSTERRA_LINK =
+            'https://everybodycollecteagle.com/tmadq5gn43?key=2a459c79c0aa475c4f8ce86259a42b61';
+            const SONGS_BETWEEN_GATEWAY = 3; // Show gateway every 3 songs (was 10)
+            const SONGS_BETWEEN_INTERSTITIAL = 5; // Interstitial every 5 songs
+            const GATEWAY_WAIT_SECONDS = 5; // Mandatory wait before skip
+
+            // -------- DOM REFS --------
+            const $ = id => document.getElementById(id);
+            const controlsEl = $('customControls');
+            const containerEl = $('videoContainer');
+            const appLoader = $('appVideoLoader');
+            const playPauseBtn = $('playPauseBtn');
+            const timerEl = $('videoTimer');
+            const watchTimeEl = $('watchTime');
+            const playingTitleEl = $('playingTitle');
+            const searchInput = $('searchInput');
+            const searchSuggestions = $('searchSuggestions');
+            const searchResultsSection = $('searchResultsSection');
+            const searchResultsRow = $('searchResultsRow');
+            const favoritesSection = $('favoritesSection');
+            const favoritesRow = $('row-favorites');
+            const recentlyPlayedSection = $('recentlyPlayedSection');
+            const recentRow = $('row-recent');
+            const refreshIndicator = $('refreshIndicator');
+            const rotateBtn = $('rotateFavBtn');
+            const songCountDisplay = $('songCountDisplay');
+            const sponsorGateway = $('sponsorGateway');
+            const gatewayVisit = $('gatewayVisitSponsor');
+            const gatewayDirect = $('gatewayContinueDirect');
+            const gatewaySkip = $('gatewaySkipAll');
+            const gatewaySongCount = $('gatewaySongCount');
+            const gatewayCountdownFill = $('gatewayCountdownFill');
+            const gatewayTimerSec = $('gatewayTimerSec');
+            const shuffleBtn = $('shuffleBtn');
+            const repeatBtn = $('repeatBtn');
+            const streakBadge = $('streakBadge');
+            const streakCountEl = $('streakCount');
+            const achievementToast = $('achievementToast');
+            const liveUserCountHeader = $('liveUserCountHeader');
+            const dailyUserCountEl = $('dailyUserCount');
+            const adClickCountEl = $('adClickCount');
+            const bottomBanner = $('bottomBanner');
+            const bannerCta = $('bannerCta');
+            const bannerClose = $('bannerClose');
+            const bannerContent = $('bannerContent');
+            const bannerTitle = $('bannerTitle');
+            const bannerDesc = $('bannerDesc');
+            const interstitialOverlay = $('interstitialOverlay');
+            const interstitialVisitBtn = $('interstitialVisitBtn');
+            const interstitialSkipBtn = $('interstitialSkipBtn');
+            const interstitialTimerText = $('interstitialTimerText');
+            const rewardToast = $('rewardToast');
+
+            // -------- STATE --------
+            let player = null;
+            let ytApiReady = false;
+            let controlsHideTimeout = null;
+            let timerInterval = null;
+            let watchMinutes = 0;
+            let dataSaverActive = false;
+            let currentVideoId = null;
+            let feedData = {};
+            let favRotationActive = false;
+            let currentFavIndex = 0;
+            let shuffleActive = false;
+            let repeatActive = false;
+
+            // ===== AD TRACKING =====
+            let totalSongsPlayed = 0;
+            let songsSinceLastGateway = 0;
+            let songsSinceLastInterstitial = 0;
+            let isGatewayShowing = false;
+            let isInterstitialShowing = false;
+            let gatewayPendingCallback = null;
+            let isTransitioning = false;
+            let adClickCount = 0;
+            let rewardSkipped = false; // if user clicked ad, skip next gateway
+
+            // Milestones
+            const MILESTONES = [5, 10, 25, 50, 100, 250, 500];
+            let milestonesHit = [];
+
+            // =============================================
+            //  AUTO-FAVORITES + LIKES + RECENTLY PLAYED
+            // =============================================
+            let playCounts = {};
+            let autoFavorites = [];
+            let likedIds = [];
+            let recentlyPlayed = [];
+
+            function loadFavoritesData() {
+                try {
+                    playCounts = JSON.parse(localStorage.getItem('bolo_play_counts') || '{}');
+                    autoFavorites = JSON.parse(localStorage.getItem('bolo_auto_favorites') || '[]');
+                    likedIds = JSON.parse(localStorage.getItem('bolo_liked_ids') || '[]');
+                    recentlyPlayed = JSON.parse(localStorage.getItem('bolo_recently_played') || '[]');
+                    milestonesHit = JSON.parse(localStorage.getItem('bolo_milestones_hit') || '[]');
+                    totalSongsPlayed = parseInt(localStorage.getItem('bolo_total_songs') || '0', 10) || 0;
+                    adClickCount = parseInt(localStorage.getItem('bolo_ad_clicks') || '0', 10) || 0;
+                } catch (e) { playCounts = {};
+                    autoFavorites = [];
+                    likedIds = [];
+                    recentlyPlayed = [];
+                    milestonesHit = []; }
+                updateAdClickDisplay();
+            }
+
+            function saveFavoritesData() {
+                try {
+                    localStorage.setItem('bolo_play_counts', JSON.stringify(playCounts));
+                    localStorage.setItem('bolo_auto_favorites', JSON.stringify(autoFavorites));
+                    localStorage.setItem('bolo_liked_ids', JSON.stringify(likedIds));
+                    localStorage.setItem('bolo_recently_played', JSON.stringify(recentlyPlayed));
+                    localStorage.setItem('bolo_milestones_hit', JSON.stringify(milestonesHit));
+                    localStorage.setItem('bolo_total_songs', String(totalSongsPlayed));
+                    localStorage.setItem('bolo_ad_clicks', String(adClickCount));
+                } catch (e) {}
+            }
+
+            function updateAdClickDisplay() {
+                if (adClickCountEl) adClickCountEl.textContent = adClickCount;
+            }
+
+            // ---- Recently played ----
+            function renderRecentlyPlayed() {
+                if (!recentRow || !recentlyPlayedSection) return;
+                if (!recentlyPlayed || recentlyPlayed.length === 0) {
+                    recentlyPlayedSection.style.display = 'none';
+                    return;
+                }
+                recentlyPlayedSection.style.display = 'block';
+                const isDataSaver = document.body.classList.contains('data-saver-active');
+                let html = '';
+                recentlyPlayed.forEach((item, idx) => {
+                    const thumb = isDataSaver ? '' :
+                        `<img src="${item.thumbnail}" loading="lazy" alt="${escapeHtml(item.title)}">`;
+                    const liked = likedIds.includes(item.id);
+                    html += `
+                        <div class="card ${item.id===currentVideoId?'now-playing-card':''}" onclick="playVideo('${item.id}','${escapeHtml(item.title)}','${item.thumbnail}','row-recent',${idx})">
+                            <span class="like-heart ${liked?'liked':''}" onclick="event.stopPropagation();toggleLike('${item.id}','${escapeHtml(item.title)}','${item.thumbnail}')">${liked?'❤️':'🤍'}</span>
+                            ${thumb}
+                            <p>${escapeHtml(item.title)}</p>
+                        </div>
+                    `;
+                });
+                recentRow.innerHTML = html;
+            }
+
+            function pushRecentlyPlayed(video) {
+                recentlyPlayed = recentlyPlayed.filter(v => v.id !== video.id);
+                recentlyPlayed.unshift(video);
+                if (recentlyPlayed.length > 15) recentlyPlayed.length = 15;
+                saveFavoritesData();
+                renderRecentlyPlayed();
+            }
+
+            // ---- Auto favorites ----
+            function renderAutoFavorites() {
+                if (!favoritesRow || !favoritesSection) return;
+                if (!autoFavorites || autoFavorites.length === 0) {
+                    favoritesSection.style.display = 'none';
+                    return;
+                }
+                favoritesSection.style.display = 'block';
+                const isDataSaver = document.body.classList.contains('data-saver-active');
+                let html = '';
+                autoFavorites.forEach((item, idx) => {
+                    const thumb = isDataSaver ? '' :
+                        `<img src="${item.thumbnail}" loading="lazy" alt="${escapeHtml(item.title)}">`;
+                    const liked = likedIds.includes(item.id);
+                    html += `
+                        <div class="card ${item.id===currentVideoId?'now-playing-card':''}" onclick="playVideo('${item.id}','${escapeHtml(item.title)}','${item.thumbnail}','row-favorites',${idx})">
+                            <span class="like-heart ${liked?'liked':''}" onclick="event.stopPropagation();toggleLike('${item.id}','${escapeHtml(item.title)}','${item.thumbnail}')">${liked?'❤️':'🤍'}</span>
+                            ${thumb}
+                            <p>${escapeHtml(item.title)}</p>
+                        </div>
+                    `;
+                });
+                favoritesRow.innerHTML = html;
+            }
+
+            function addToAutoFavorites(video) {
+                const exists = autoFavorites.some(fav => fav.id === video.id);
+                if (exists) return;
+                if (autoFavorites.length >= 15) autoFavorites.shift();
+                autoFavorites.push({
+                    id: video.id,
+                    title: video.title,
+                    thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.id}/mqdefault.jpg`
+                });
+                saveFavoritesData();
+                renderAutoFavorites();
+            }
+
+            function incrementPlayCount(videoId, title, thumbnail) {
+                if (!videoId) return;
+                if (!playCounts[videoId]) playCounts[videoId] = 0;
+                playCounts[videoId] += 1;
+                if (playCounts[videoId] >= 3) {
+                    addToAutoFavorites({ id: videoId, title: title, thumbnail: thumbnail });
+                }
+                saveFavoritesData();
+            }
+
+            // ---- Likes ----
+            window.toggleLike = function(id, title, thumbnail) {
+                const idx = likedIds.indexOf(id);
+                if (idx >= 0) {
+                    likedIds.splice(idx, 1);
+                    showToast('💔 Removed from Liked Songs');
+                } else {
+                    likedIds.push(id);
+                    showToast('❤️ Added to Liked Songs');
+                    addToAutoFavorites({ id, title, thumbnail });
+                }
+                saveFavoritesData();
+                renderAutoFavorites();
+                renderRecentlyPlayed();
+                renderAllRows(feedData);
+            };
+
+            // =============================================
+            //  DAILY STREAK
+            // =============================================
+            function todayKey() {
+                const d = new Date();
+                return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+            }
+
+            function updateStreak() {
+                try {
+                    const data = JSON.parse(localStorage.getItem('bolo_streak') || 'null') || { count: 0, lastDay: null };
+                    const today = todayKey();
+                    if (data.lastDay !== today) {
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        const yKey = `${yesterday.getFullYear()}-${yesterday.getMonth()+1}-${yesterday.getDate()}`;
+                        if (data.lastDay === yKey) { data.count += 1; } else { data.count = 1; }
+                        data.lastDay = today;
+                        localStorage.setItem('bolo_streak', JSON.stringify(data));
+                        if (data.count > 1) {
+                            setTimeout(() => showAchievement('🔥', `${data.count}-Day Streak!`,
+                                "You're on fire — keep the music going"), 1500);
+                        }
+                    }
+                    if (streakBadge && streakCountEl) {
+                        streakCountEl.textContent = data.count;
+                        streakBadge.style.display = data.count > 0 ? 'inline-flex' : 'none';
+                    }
+                } catch (e) {}
+            }
+
+            // =============================================
+            //  ACHIEVEMENT TOASTS
+            // =============================================
+            let achTimeout = null;
+
+            function showAchievement(icon, title, sub) {
+                if (!achievementToast) return;
+                $('achIcon').textContent = icon;
+                $('achTitle').textContent = title;
+                $('achSub').textContent = sub || '';
+                achievementToast.classList.add('show');
+                if (achTimeout) clearTimeout(achTimeout);
+                achTimeout = setTimeout(() => achievementToast.classList.remove('show'), 3800);
+            }
+
+            function checkMilestones() {
+                for (const m of MILESTONES) {
+                    if (totalSongsPlayed >= m && !milestonesHit.includes(m)) {
+                        milestonesHit.push(m);
+                        saveFavoritesData();
+                        showAchievement('🏆', `${m} Songs Played!`, milestoneLabel(m));
+                        return;
+                    }
+                }
+            }
+
+            function milestoneLabel(m) {
+                if (m <= 5) return 'Welcome to the Pulse family';
+                if (m <= 25) return "You're building great taste";
+                if (m <= 50) return 'Bona fide BOLO regular';
+                if (m <= 100) return 'Certified Pulse Superfan';
+                return 'Pulse Legend status unlocked';
+            }
+
+            // =============================================
+            //  REWARD TOAST
+            // =============================================
+            let rewardTimeout = null;
+
+            function showRewardToast(msg) {
+                if (!rewardToast) return;
+                const textEl = rewardToast.querySelector('.r-text');
+                if (textEl) textEl.innerHTML = msg;
+                rewardToast.classList.add('show');
+                if (rewardTimeout) clearTimeout(rewardTimeout);
+                rewardTimeout = setTimeout(() => rewardToast.classList.remove('show'), 3000);
+            }
+
+            // =============================================
+            //  AD CLICK HANDLER
+            // =============================================
+            function recordAdClick() {
+                adClickCount++;
+                saveFavoritesData();
+                updateAdClickDisplay();
+                // Reward: skip next gateway
+                rewardSkipped = true;
+                showRewardToast(
+                    '🎁 Thanks for supporting! <strong>Next ad skipped!</strong>'
+                );
+                // Also show achievement-style
+                if (adClickCount % 5 === 0) {
+                    showAchievement('💎', `${adClickCount} Ad Clicks!`, 'You\'re keeping BOLO alive!');
+                }
+                // Open the monetag link
+                window.open(MONETAG_LINK, '_blank');
+            }
+
+            // =============================================
+            //  SPONSOR GATEWAY (enhanced with countdown)
+            // =============================================
+            let gatewayCountdownInterval = null;
+            let gatewayRemaining = GATEWAY_WAIT_SECONDS;
+
+            function showSponsorGateway(callback) {
+                if (isGatewayShowing) return;
+                if (rewardSkipped) {
+                    // User gets a free pass
+                    rewardSkipped = false;
+                    showRewardToast('⏭️ Ad skipped — you earned it!');
+                    if (callback) setTimeout(callback, 300);
+                    return;
+                }
+
+                isGatewayShowing = true;
+                gatewayRemaining = GATEWAY_WAIT_SECONDS;
+
+                if (gatewaySongCount) gatewaySongCount.textContent = totalSongsPlayed;
+                if (gatewayTimerSec) gatewayTimerSec.textContent = gatewayRemaining;
+                if (gatewayCountdownFill) gatewayCountdownFill.style.width = '0%';
+                if (gatewayDirect) gatewayDirect.disabled = true;
+                if (gatewaySkip) gatewaySkip.classList.add('hidden');
+
+                if (player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING) {
+                    player.pauseVideo();
+                }
+
+                sponsorGateway.classList.add('active');
+                gatewayPendingCallback = callback || null;
+
+                // Start countdown
+                if (gatewayCountdownInterval) clearInterval(gatewayCountdownInterval);
+                gatewayCountdownInterval = setInterval(function() {
+                    gatewayRemaining--;
+                    if (gatewayTimerSec) gatewayTimerSec.textContent = Math.max(0, gatewayRemaining);
+                    if (gatewayCountdownFill) {
+                        const pct = ((GATEWAY_WAIT_SECONDS - gatewayRemaining) / GATEWAY_WAIT_SECONDS) * 100;
+                        gatewayCountdownFill.style.width = Math.min(100, pct) + '%';
+                    }
+                    if (gatewayRemaining <= 0) {
+                        clearInterval(gatewayCountdownInterval);
+                        gatewayCountdownInterval = null;
+                        if (gatewayDirect) gatewayDirect.disabled = false;
+                        if (gatewaySkip) gatewaySkip.classList.remove('hidden');
+                    }
+                }, 1000);
+            }
+
+            function hideSponsorGateway() {
+                if (gatewayCountdownInterval) {
+                    clearInterval(gatewayCountdownInterval);
+                    gatewayCountdownInterval = null;
+                }
+                sponsorGateway.classList.remove('active');
+                isGatewayShowing = false;
+                if (player && player.playVideo) player.playVideo();
+                if (gatewayPendingCallback) {
+                    const cb = gatewayPendingCallback;
+                    gatewayPendingCallback = null;
+                    setTimeout(cb, 300);
+                }
+            }
+
+            // Gateway button handlers
+            if (gatewayVisit) {
+                gatewayVisit.addEventListener('click', function() {
+                    recordAdClick();
+                    hideSponsorGateway();
+                    showToast('🔥 Thank you for supporting BOLO Pulse!');
+                });
+            }
+
+            if (gatewayDirect) {
+                gatewayDirect.addEventListener('click', function() {
+                    if (gatewayDirect.disabled) return;
+                    hideSponsorGateway();
+                    showToast('⏩ Continuing your music...');
+                });
+            }
+
+            if (gatewaySkip) {
+                gatewaySkip.addEventListener('click', function() {
+                    hideSponsorGateway();
+                    showToast('⏭️ Skipping for now');
+                });
+            }
+
+            if (sponsorGateway) {
+                sponsorGateway.addEventListener('click', function(e) {
+                    if (e.target === this && gatewayRemaining <= 0) {
+                        hideSponsorGateway();
+                    }
+                });
+            }
+
+            function shouldShowGateway() {
+                if (rewardSkipped) {
+                    rewardSkipped = false;
+                    return false;
+                }
+                const result = songsSinceLastGateway >= SONGS_BETWEEN_GATEWAY;
+                if (result) songsSinceLastGateway = 0;
+                return result;
+            }
+
+            // =============================================
+            //  INTERSTITIAL AD
+            // =============================================
+            let interstitialCountdown = 5;
+            let interstitialInterval = null;
+
+            function showInterstitial() {
+                if (isInterstitialShowing) return;
+                if (isGatewayShowing) return;
+                if (rewardSkipped) {
+                    rewardSkipped = false;
+                    showRewardToast('⏭️ Ad skipped — you earned it!');
+                    return;
+                }
+
+                isInterstitialShowing = true;
+                interstitialCountdown = 5;
+                if (interstitialTimerText) interstitialTimerText.textContent = '⏱️ ' + interstitialCountdown + 's';
+                if (interstitialSkipBtn) interstitialSkipBtn.disabled = true;
+                if (player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING) {
+                    player.pauseVideo();
+                }
+                interstitialOverlay.classList.add('active');
+
+                if (interstitialInterval) clearInterval(interstitialInterval);
+                interstitialInterval = setInterval(function() {
+                    interstitialCountdown--;
+                    if (interstitialTimerText) interstitialTimerText.textContent = '⏱️ ' + Math.max(0,
+                    interstitialCountdown) + 's';
+                    if (interstitialCountdown <= 0) {
+                        clearInterval(interstitialInterval);
+                        interstitialInterval = null;
+                        if (interstitialSkipBtn) interstitialSkipBtn.disabled = false;
+                    }
+                }, 1000);
+            }
+
+            function hideInterstitial() {
+                if (interstitialInterval) {
+                    clearInterval(interstitialInterval);
+                    interstitialInterval = null;
+                }
+                interstitialOverlay.classList.remove('active');
+                isInterstitialShowing = false;
+                if (player && player.playVideo) player.playVideo();
+            }
+
+            if (interstitialVisitBtn) {
+                interstitialVisitBtn.addEventListener('click', function() {
+                    recordAdClick();
+                    hideInterstitial();
+                    showToast('🌟 Thank you for supporting BOLO!');
+                });
+            }
+
+            if (interstitialSkipBtn) {
+                interstitialSkipBtn.addEventListener('click', function() {
+                    if (interstitialSkipBtn.disabled) return;
+                    hideInterstitial();
+                    showToast('⏩ Continuing...');
+                });
+            }
+
+            function shouldShowInterstitial() {
+                const result = songsSinceLastInterstitial >= SONGS_BETWEEN_INTERSTITIAL;
+                if (result) songsSinceLastInterstitial = 0;
+                return result;
+            }
+
+            // =============================================
+            //  HANDLE SONG PLAYED (unified monetization)
+            // =============================================
+            function handleSongPlayed() {
+                totalSongsPlayed++;
+                songsSinceLastGateway++;
+                songsSinceLastInterstitial++;
+                updateSongCounter();
+                checkMilestones();
+                saveFavoritesData();
+
+                // Priority: gateway > interstitial
+                if (shouldShowGateway()) {
+                    showSponsorGateway(function() {
+                        if (player && player.playVideo) player.playVideo();
+                    });
+                    return true;
+                }
+
+                if (shouldShowInterstitial()) {
+                    showInterstitial();
+                    return true;
+                }
+
+                return false;
+            }
+
+            // =============================================
+            //  PLAYLIST LOADING
+            // =============================================
+            const YT_API_KEY = 'AIzaSyATDKEqv1vjJDsGExNydBXxih0WalXg_uM';
+            const CACHE_API = '';
+            const PLAYLIST_CACHE_TTL = 60 * 60 * 1000;
+            const SEARCH_CACHE_TTL = 6 * 60 * 60 * 1000;
+            const MAX_VIDEOS_PER_PLAYLIST = 15;
+
+            const categoriesMap = [
+                { id: "PLU1sksLJ8yEyRcpWEurUlHN24WjzpsTHZ", row: "row-1", badge: false },
+                { id: "PLU1sksLJ8yEzB35XnNE_URWG0bP4DBfqB", row: "row-2", badge: true },
+                { id: "PLU1sksLJ8yExiKJHK6q41_Jr1kKYswmxb", row: "row-3", badge: true },
+                { id: "PLU1sksLJ8yEw4XUsh3u7ohT7fEc_OfqzD", row: "row-4", badge: false },
+                { id: "PLU1sksLJ8yExUC_KPyFJzt9Ygchn5g-dv", row: "row-5", badge: false },
+                { id: "PLU1sksLJ8yExlf8mWyaoXrDZX2Iw-O6MZ", row: "row-6", badge: false },
+                { id: "PLU1sksLJ8yEy_HIET1Oeg0dLIwPKfpBG1", row: "row-7", badge: false },
+                { id: "PLU1sksLJ8yEx8WTzxUuZbQ23gfID4mpWF", row: "row-8", badge: false },
+                { id: "PLU1sksLJ8yEwKQ4BT8vKc4I007HsrTCNX", row: "row-10", badge: false },
+                { id: "PLU1sksLJ8yEwl23pBJmrC_-tMN4jMXFBj", row: "row-11", badge: false },
+                { id: "PLU1sksLJ8yEyxrc2gsIYkr__e4PNyIUQS", row: "row-13", badge: false },
+                { id: "PLU1sksLJ8yEx1tne539guOAW_TMLFozdh", row: "row-14", badge: false },
+                { id: "PLU1sksLJ8yEw_ZmZ2UFjrKt_pGUUBW7jP", row: "row-9", badge: false },
+                { id: "PLU1sksLJ8yExlUooY_eU72R3MmEKotJ3E", row: "row-12", badge: false },
+                { id: "PLU1sksLJ8yEx1WhWx_0RBQnY3H8j8PtCx", row: "row-15", badge: false }
+            ];
+
+            let currentPlaylistId = null;
+            let currentVideoIndex = -1;
+            let searchResultsVideos = [];
+
+            function getLocalPlaylistCache() {
+                try {
+                    const raw = localStorage.getItem('bolo_feed');
+                    if (!raw) return null;
+                    const parsed = JSON.parse(raw);
+                    if (Date.now() - parsed.timestamp < PLAYLIST_CACHE_TTL) return parsed.data;
+                    return null;
+                } catch (e) { return null; }
+            }
+
+            function setLocalPlaylistCache(data) {
+                try {
+                    localStorage.setItem('bolo_feed', JSON.stringify({ data, timestamp: Date.now() }));
+                } catch (e) {}
+            }
+
+            async function fetchPlaylistDirect(playlistId) {
+                const url =
+                    `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=${MAX_VIDEOS_PER_PLAYLIST}&playlistId=${playlistId}&key=${YT_API_KEY}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`API error: ${res.status}`);
+                const data = await res.json();
+                return (data.items || []).map(item => ({
+                    id: item.snippet.resourceId.videoId,
+                    title: item.snippet.title || 'Untitled',
+                    thumbnail: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || ''
+                }));
+            }
+
+            function renderSkeletonRows() {
+                categoriesMap.forEach(cat => {
+                    const container = document.getElementById(cat.row);
+                    if (!container) return;
+                    let html = '';
+                    for (let i = 0; i < 5; i++) {
+                        html +=
+                        `<div class="skel-card"><div class="skel-thumb"></div><div class="skel-line"></div><div class="skel-line short"></div></div>`;
+                    }
+                    container.innerHTML = html;
+                });
+            }
+
+            function renderCards(container, items, showRank, playlistId, prependSponsored = false) {
+                if (!container) return;
+                if (!items || items.length === 0) {
+                    container.innerHTML = '<p style="color:#666;font-size:12px;padding:8px;">No videos available</p>';
+                    return;
+                }
+                const isDataSaver = document.body.classList.contains('data-saver-active');
+                let html = '';
+
+                // Sponsored cards in row-1 and row-2 (multiple placements)
+                if (prependSponsored && (playlistId === 'row-1' || playlistId === 'row-2')) {
+                    const emoji = playlistId === 'row-1' ? '🔥' : '🎵';
+                    const title = playlistId === 'row-1' ? 'Premium Rewards' : 'Support BOLO';
+                    const sub = playlistId === 'row-1' ? '⚡ Stream Boost' : '❤️ Keep music free';
+                    html += `
+                        <div class="sponsored-card" onclick="triggerSponsoredAd()">
+                            <span class="icon">${emoji}</span>
+                            <p>${title}</p>
+                            <div class="sub">${sub}</div>
+                        </div>
+                    `;
+                }
+
+                items.forEach((item, index) => {
+                    const rank = showRank ? `<span class="rank-badge">#${index+1}</span>` : '';
+                    const thumb = isDataSaver ? '' :
+                        `<img src="${item.thumbnail}" loading="lazy" alt="${escapeHtml(item.title)}">`;
+                    const pid = playlistId || container.id || 'unknown';
+                    const liked = likedIds.includes(item.id);
+                    const npClass = item.id === currentVideoId ? 'now-playing-card' : '';
+                    html += `
+                        <div class="card ${npClass}" onclick="playVideo('${item.id}','${escapeHtml(item.title)}','${item.thumbnail || ''}','${pid}',${index})">
+                            ${rank}
+                            <span class="like-heart ${liked?'liked':''}" onclick="event.stopPropagation();toggleLike('${item.id}','${escapeHtml(item.title)}','${item.thumbnail||''}')">${liked?'❤️':'🤍'}</span>
+                            ${thumb}
+                            <p>${escapeHtml(item.title)}</p>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+
+            function renderAllRows(data) {
+                categoriesMap.forEach(cat => {
+                    const rowData = data[cat.row] || [];
+                    const container = document.getElementById(cat.row);
+                    if (container) renderCards(container, rowData, cat.badge, cat.row, true);
+                });
+            }
+
+            async function loadAllPlaylists() {
+                const cached = getLocalPlaylistCache();
+                if (cached) {
+                    console.log('📦 Loaded playlists from local cache');
+                    renderAllRows(cached);
+                    feedData = cached;
+                    renderAutoFavorites();
+                    renderRecentlyPlayed();
+                    return;
+                }
+
+                renderSkeletonRows();
+
+                if (CACHE_API) {
+                    try {
+                        const res = await fetch(`${CACHE_API}/feed`, { signal: AbortSignal.timeout(3000) });
+                        if (res.ok) {
+                            const data = await res.json();
+                            renderAllRows(data);
+                            feedData = data;
+                            setLocalPlaylistCache(data);
+                            renderAutoFavorites();
+                            renderRecentlyPlayed();
+                            return;
+                        }
+                    } catch (e) { /* silent */ }
+                }
+
+                try {
+                    const results = {};
+                    const promises = categoriesMap.map(async (cat) => {
+                        const videos = await fetchPlaylistDirect(cat.id);
+                        results[cat.row] = videos;
+                    });
+                    await Promise.all(promises);
+                    renderAllRows(results);
+                    feedData = results;
+                    setLocalPlaylistCache(results);
+                    renderAutoFavorites();
+                    renderRecentlyPlayed();
+                    console.log('✅ Data loaded successfully');
+                } catch (err) {
+                    console.error('❌ Load failed:', err);
+                    showToast('Failed to load content. Please refresh.');
+                }
+            }
+
+            // =============================================
+            //  SEARCH
+            // =============================================
+            function getSearchHistory() {
+                try { return JSON.parse(localStorage.getItem('bolo_search_history') || '[]'); } catch (e) { return []; }
+            }
+
+            function pushSearchHistory(query) {
+                let hist = getSearchHistory().filter(q => q.toLowerCase() !== query.toLowerCase());
+                hist.unshift(query);
+                if (hist.length > 8) hist.length = 8;
+                try { localStorage.setItem('bolo_search_history', JSON.stringify(hist)); } catch (e) {}
+            }
+
+            window.handleSearchInput = function() {
+                const val = searchInput.value.trim();
+                const hist = getSearchHistory();
+                let list = val ? hist.filter(q => q.toLowerCase().includes(val.toLowerCase())) : hist;
+                if (!list.length) { searchSuggestions.classList.remove('active'); return; }
+                searchSuggestions.innerHTML = list.map(q =>
+                    `<div class="sugg-item" onclick="pickSuggestion('${escapeHtml(q).replace(/'/g,"\\'")}')">🕐 ${escapeHtml(q)}</div>`
+                ).join('');
+                searchSuggestions.classList.add('active');
+            };
+
+            window.pickSuggestion = function(q) {
+                searchInput.value = q;
+                searchSuggestions.classList.remove('active');
+                searchMusic();
+            };
+
+            document.addEventListener('click', function(e) {
+                if (searchSuggestions && !searchSuggestions.contains(e.target) && e.target !== searchInput) {
+                    searchSuggestions.classList.remove('active');
+                }
+            });
+
+            function getCachedSearch(query) {
+                try {
+                    const key = `bolo_search_${query.toLowerCase().trim()}`;
+                    const raw = localStorage.getItem(key);
+                    if (!raw) return null;
+                    const parsed = JSON.parse(raw);
+                    if (Date.now() - parsed.timestamp < SEARCH_CACHE_TTL) return parsed.data;
+                    localStorage.removeItem(key);
+                    return null;
+                } catch (e) { return null; }
+            }
+
+            function setCachedSearch(query, data) {
+                try {
+                    const key = `bolo_search_${query.toLowerCase().trim()}`;
+                    localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+                } catch (e) {}
+            }
+
+            async function searchYouTubeDirect(query) {
+                const url =
+                    `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video&key=${YT_API_KEY}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`Search error: ${res.status}`);
+                const data = await res.json();
+                return (data.items || []).map(item => ({
+                    id: item.id.videoId,
+                    title: item.snippet.title || 'Untitled',
+                    thumbnail: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || ''
+                }));
+            }
+
+            window.searchMusic = async function() {
+                const query = searchInput.value.trim();
+                if (!query) return;
+                searchSuggestions.classList.remove('active');
+                pushSearchHistory(query);
+                searchResultsSection.style.display = 'block';
+
+                const cached = getCachedSearch(query);
+                if (cached) {
+                    searchResultsVideos = cached;
+                    renderCards(searchResultsRow, cached, false, 'search');
+                    searchResultsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+
+                searchResultsRow.innerHTML =
+                    '<div class="skel-card"><div class="skel-thumb"></div><div class="skel-line"></div></div>'.repeat(4);
+
+                try {
+                    let results = null;
+                    if (CACHE_API) {
+                        try {
+                            const res = await fetch(`${CACHE_API}/search?q=${encodeURIComponent(query)}`, { signal: AbortSignal
+                                    .timeout(3000) });
+                            if (res.ok) results = await res.json();
+                        } catch (e) {}
+                    }
+                    if (!results) results = await searchYouTubeDirect(query);
+
+                    if (results && results.length > 0) {
+                        searchResultsVideos = results;
+                        setCachedSearch(query, results);
+                        renderCards(searchResultsRow, results, false, 'search');
+                    } else {
+                        searchResultsRow.innerHTML = '<p style="color:#666;padding:8px;">No results found.</p>';
+                        searchResultsVideos = [];
+                    }
+                    searchResultsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } catch (err) {
+                    showToast('Search failed – please try again');
+                }
+            };
+
+            // =============================================
+            //  PLAYER COMMANDS
+            // =============================================
+
+            function updateSongCounter() {
+                if (songCountDisplay) songCountDisplay.textContent = totalSongsPlayed;
+            }
+
+            window.toggleShuffle = function() {
+                shuffleActive = !shuffleActive;
+                if (shuffleBtn) shuffleBtn.classList.toggle('toggle-active', shuffleActive);
+                showToast(shuffleActive ? '🔀 Shuffle ON' : '🔀 Shuffle OFF');
+            };
+
+            window.toggleRepeat = function() {
+                repeatActive = !repeatActive;
+                if (repeatBtn) repeatBtn.classList.toggle('toggle-active', repeatActive);
+                showToast(repeatActive ? '🔁 Repeat ON' : '🔁 Repeat OFF');
+            };
+
+            window.playVideo = function(videoId, title, thumbnail, playlistId, index) {
+                if (!ytApiReady || !player) {
+                    setTimeout(() => window.playVideo(videoId, title, thumbnail, playlistId, index), 500);
+                    return;
+                }
+                if (isTransitioning) {
+                    setTimeout(() => window.playVideo(videoId, title, thumbnail, playlistId, index), 300);
+                    return;
+                }
+                isTransitioning = true;
+
+                currentVideoId = videoId;
+                currentPlaylistId = playlistId || null;
+                currentVideoIndex = (typeof index === 'number' && index >= 0) ? index : -1;
+
+                const thumb = thumbnail || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+
+                if (videoId && title) {
+                    incrementPlayCount(videoId, title, thumb);
+                    pushRecentlyPlayed({ id: videoId, title, thumbnail: thumb });
+                }
+
+                player.loadVideoById(videoId);
+                if (playingTitleEl) playingTitleEl.innerText = `NOW PLAYING: ${title || 'BOLO TRACK'}`;
+                if (appLoader) appLoader.classList.remove('hide-loader', 'paused-loader');
+                showControlsTemporarily();
+                if (!timerInterval) startTimerUpdates();
+
+                if (favRotationActive && playlistId === 'row-favorites') {
+                    currentFavIndex = (typeof index === 'number' && index >= 0) ? index : 0;
+                }
+
+                renderAllRows(feedData);
+                renderAutoFavorites();
+                renderRecentlyPlayed();
+
+                player.playVideo();
+
+                setTimeout(() => {
+                    const shown = handleSongPlayed();
+                    isTransitioning = false;
+                    if (!shown && player && player.playVideo) player.playVideo();
+                }, 800);
+            };
+
+            function playNextInPlaylist() {
+                if (isGatewayShowing || isInterstitialShowing) return;
+                if (isTransitioning) return;
+
+                if (repeatActive && currentVideoId) {
+                    player.seekTo(0, true);
+                    player.playVideo();
+                    return;
+                }
+
+                if (!currentPlaylistId || currentVideoIndex < 0) {
+                    if (currentVideoId) {
+                        for (const rowId in feedData) {
+                            const videos = feedData[rowId] || [];
+                            const idx = videos.findIndex(v => v.id === currentVideoId);
+                            if (idx >= 0) { currentPlaylistId = rowId;
+                                currentVideoIndex = idx; break; }
+                        }
+                        if (!currentPlaylistId) {
+                            const idx = autoFavorites.findIndex(v => v.id === currentVideoId);
+                            if (idx >= 0) { currentPlaylistId = 'row-favorites';
+                                currentVideoIndex = idx; }
+                        }
+                        if (!currentPlaylistId) {
+                            const idx = searchResultsVideos.findIndex(v => v.id === currentVideoId);
+                            if (idx >= 0) { currentPlaylistId = 'search';
+                                currentVideoIndex = idx; }
+                        }
+                    }
+                    if (!currentPlaylistId) {
+                        if (autoFavorites.length > 0) {
+                            currentPlaylistId = 'row-favorites';
+                            currentVideoIndex = 0;
+                        } else {
+                            for (const rowId in feedData) {
+                                if (feedData[rowId] && feedData[rowId].length > 0) {
+                                    currentPlaylistId = rowId;
+                                    currentVideoIndex = 0;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                let playlist = null;
+                if (currentPlaylistId === 'row-favorites') playlist = autoFavorites;
+                else if (currentPlaylistId === 'search') playlist = searchResultsVideos;
+                else if (feedData[currentPlaylistId]) playlist = feedData[currentPlaylistId];
+
+                if (!playlist || playlist.length === 0) {
+                    showToast('No more videos in this playlist.');
+                    return;
+                }
+
+                let nextIndex;
+                if (shuffleActive && playlist.length > 1) {
+                    do {
+                        nextIndex = Math.floor(Math.random() * playlist.length);
+                    } while (nextIndex === currentVideoIndex && playlist.length > 1);
+                } else {
+                    nextIndex = (currentVideoIndex + 1) % playlist.length;
+                }
+                if (nextIndex < 0 || nextIndex >= playlist.length) nextIndex = 0;
+
+                const nextVideo = playlist[nextIndex];
+                if (!nextVideo || !nextVideo.id) {
+                    showToast('Error loading next video.');
+                    return;
+                }
+
+                currentVideoIndex = nextIndex;
+                const thumb = nextVideo.thumbnail || `https://img.youtube.com/vi/${nextVideo.id}/mqdefault.jpg`;
+                playVideo(nextVideo.id, nextVideo.title, thumb, currentPlaylistId, nextIndex);
+            }
+
+            // -------- FAVORITES ROTATION --------
+            window.toggleFavRotation = function() {
+                favRotationActive = !favRotationActive;
+                if (rotateBtn) {
+                    rotateBtn.classList.toggle('active', favRotationActive);
+                    rotateBtn.innerText = favRotationActive ? '⏹ ROTATE ON' : '🎵 ROTATE FAV';
+                }
+                showToast(favRotationActive ? '⭐ Auto-Favorites rotation ENABLED' : '⭐ Rotation DISABLED');
+                if (favRotationActive && autoFavorites.length) {
+                    if (!player || player.getPlayerState() !== YT.PlayerState.PLAYING) {
+                        currentFavIndex = 0;
+                        const first = autoFavorites[0];
+                        if (first) playVideo(first.id, first.title, first.thumbnail, 'row-favorites', 0);
+                    }
+                } else if (favRotationActive && autoFavorites.length === 0) {
+                    showToast('⭐ No auto-favorites yet. Keep listening!');
+                    favRotationActive = false;
+                    if (rotateBtn) { rotateBtn.classList.remove('active');
+                        rotateBtn.innerText = '🎵 ROTATE FAV'; }
+                }
+            };
+
+            window.togglePlayPause = function() {
+                if (!player || !ytApiReady) return;
+                if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+                    player.pauseVideo();
+                    stopTimerUpdates();
+                    if (appLoader) appLoader.classList.add('paused-loader');
+                } else {
+                    player.playVideo();
+                    startTimerUpdates();
+                    if (appLoader) appLoader.classList.remove('paused-loader');
+                }
+                showControlsTemporarily();
+            };
+
+            window.customSeek = function(secs) {
+                if (player && typeof player.getCurrentTime === 'function') {
+                    player.seekTo(player.getCurrentTime() + secs, true);
+                    updateTimerDisplay();
+                }
+                showControlsTemporarily();
+            };
+
+            // -------- TIMER --------
+            function updateTimerDisplay() {
+                if (!player || typeof player.getCurrentTime !== 'function') return;
+                const cur = player.getCurrentTime() || 0;
+                const dur = player.getDuration() || 0;
+                if (timerEl) timerEl.innerText = `${formatTime(cur)} / ${formatTime(dur)}`;
+            }
+
+            function startTimerUpdates() {
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    if (player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING) {
+                        updateTimerDisplay();
+                        watchMinutes = Math.floor((player.getCurrentTime() || 0) / 60);
+                        if (watchTimeEl) watchTimeEl.innerText = `SESSION: ${watchMinutes}M`;
+                    }
+                }, 1000);
+            }
+
+            function stopTimerUpdates() {
+                if (timerInterval) { clearInterval(timerInterval);
+                    timerInterval = null; }
+            }
+
+            // -------- CONTROLS --------
+            function resetControlTimer() {
+                if (controlsHideTimeout) clearTimeout(controlsHideTimeout);
+                if (controlsEl) controlsEl.classList.remove('hide-controls');
+                if (appLoader) appLoader.classList.remove('hide-loader');
+                if (player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING) {
+                    controlsHideTimeout = setTimeout(() => {
+                        if (controlsEl) controlsEl.classList.add('hide-controls');
+                        if (appLoader) appLoader.classList.add('hide-loader');
+                    }, 4500);
+                }
+            }
+
+            function showControlsTemporarily() {
+                if (controlsHideTimeout) clearTimeout(controlsHideTimeout);
+                if (controlsEl) controlsEl.classList.remove('hide-controls');
+                if (appLoader) appLoader.classList.remove('hide-loader');
+                resetControlTimer();
+            }
+
+            // -------- DATA SAVER --------
+            window.toggleDataSaver = function() {
+                dataSaverActive = !dataSaverActive;
+                document.body.classList.toggle('data-saver-active', dataSaverActive);
+                const btn = document.getElementById('dataSaverToggleBtn');
+                if (btn) btn.innerText = `Data Saver: ${dataSaverActive ? 'ON' : 'OFF'}`;
+                renderAllRows(feedData);
+                renderAutoFavorites();
+                renderRecentlyPlayed();
+                if (searchResultsSection.style.display !== 'none') {
+                    renderCards(searchResultsRow, searchResultsVideos, false, 'search');
+                }
+            };
+
+            // -------- FULLSCREEN --------
+            window.toggleFullScreen = function() {
+                const playerSection = document.getElementById('playerSection');
+                if (!document.fullscreenElement) {
+                    playerSection.requestFullscreen?.() || playerSection.webkitRequestFullscreen?.();
+                } else {
+                    document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+                }
+            };
+
+            // -------- PULL TO REFRESH --------
+            let pullStartY = 0;
+            document.addEventListener('touchstart', e => {
+                if (window.scrollY === 0) pullStartY = e.touches[0].clientY;
+            }, { passive: true });
+            document.addEventListener('touchmove', e => {
+                if (window.scrollY > 0 || !pullStartY) return;
+                const diff = e.touches[0].clientY - pullStartY;
+                if (diff > 80) { pullStartY = 0;
+                    forceRefresh(); }
+            }, { passive: true });
+
+            async function forceRefresh() {
+                if (refreshIndicator.classList.contains('loading')) return;
+                refreshIndicator.classList.add('loading');
+                localStorage.removeItem('bolo_feed');
+                await loadAllPlaylists();
+                refreshIndicator.classList.remove('loading');
+                showToast('Feed refreshed!');
+            }
+
+            // ============================================================
+            //  SPONSORED AD TRIGGER (for cards)
+            // ============================================================
+            window.triggerSponsoredAd = function() {
+                recordAdClick();
+                // Also open the link directly
+                window.open(MONETAG_LINK, '_blank');
+                showToast('🔥 Opening Premium Rewards...');
+            };
+
+            // ============================================================
+            //  BOTTOM BANNER AD
+            // ============================================================
+            const BANNER_MESSAGES = [
+                { icon: '🎵', title: 'Support BOLO Pulse', desc: 'Visit our sponsor & keep the music flowing' },
+                { icon: '🔥', title: '🔥 Premium Access', desc: 'Unlock exclusive content — click here!' },
+                { icon: '💎', title: '💎 Support the Vibes', desc: 'Help us keep BOLO free for everyone' },
+                { icon: '🚀', title: '🚀 Boost Your Experience', desc: 'Check out our partner offer' },
+            ];
+            let bannerIndex = 0;
+
+            function rotateBannerMessage() {
+                bannerIndex = (bannerIndex + 1) % BANNER_MESSAGES.length;
+                const msg = BANNER_MESSAGES[bannerIndex];
+                if (bannerTitle) bannerTitle.textContent = msg.title;
+                if (bannerDesc) bannerDesc.textContent = msg.desc;
+                const iconEl = bottomBanner?.querySelector('.banner-icon');
+                if (iconEl) iconEl.textContent = msg.icon;
+            }
+
+            // Show banner after 5 seconds, then rotate every 30s
+            setTimeout(() => {
+                if (bottomBanner) bottomBanner.classList.remove('hidden');
+            }, 5000);
+
+            setInterval(rotateBannerMessage, 30000);
+
+            if (bannerCta) {
+                bannerCta.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    recordAdClick();
+                    window.open(MONETAG_LINK, '_blank');
+                    showToast('🌟 Thank you for supporting BOLO!');
+                });
+            }
+
+            if (bannerContent) {
+                bannerContent.addEventListener('click', function() {
+                    recordAdClick();
+                    window.open(MONETAG_LINK, '_blank');
+                    showToast('🌟 Thank you for supporting BOLO!');
+                });
+            }
+
+            if (bannerClose) {
+                bannerClose.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (bottomBanner) bottomBanner.classList.add('hidden');
+                    // Re-show after 2 minutes
+                    setTimeout(() => {
+                        if (bottomBanner) bottomBanner.classList.remove('hidden');
+                    }, 120000);
+                });
+            }
+
+            // ============================================================
+            //  FIREBASE REAL-TIME USERS
+            // ============================================================
+            const firebaseConfig = {
+                apiKey: "AIzaSyDy-UvRKopJAZEfIgktg4FXI39IkOQ07Hs",
+                authDomain: "bolo-connect.firebaseapp.com",
+                databaseURL: "https://bolo-connect-default-rtdb.europe-west1.firebasedatabase.app/",
+                projectId: "bolo-connect"
+            };
+
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
+
+            let boloUserId = localStorage.getItem('bolo_user_id');
+            if (!boloUserId) {
+                boloUserId = 'bolo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('bolo_user_id', boloUserId);
+            }
+
+            let boloUserRef = null;
+            let isBoloUserActive = false;
+
+            function trackDailyUser() {
+                const today = new Date().toISOString().slice(0, 10);
+                const dailyRef = db.ref('daily_users/' + today + '/' + boloUserId);
+                dailyRef.once('value', (snap) => {
+                    if (!snap.exists()) {
+                        dailyRef.set(true).catch(err => console.warn('⚠️ Daily user tracking failed:', err));
+                    }
+                }).catch(err => console.warn('⚠️ Daily user check failed:', err));
+            }
+
+            function listenDailyUserCount() {
+                const today = new Date().toISOString().slice(0, 10);
+                const dailyRef = db.ref('daily_users/' + today);
+                dailyRef.on('value', (snapshot) => {
+                    const count = snapshot.numChildren ? snapshot.numChildren() : 0;
+                    if (dailyUserCountEl) dailyUserCountEl.textContent = count;
+                }, (error) => console.warn('⚠️ Daily user count listener error:', error));
+            }
+
+            function registerBoloUser() {
+                if (isBoloUserActive) return;
+                boloUserRef = db.ref('bolo_online/' + boloUserId);
+                boloUserRef.set({
+                    userId: boloUserId,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    userAgent: navigator.userAgent.substring(0, 100)
+                }).then(() => {
+                    isBoloUserActive = true;
+                    console.log('✅ BOLO Pulse user registered: ' + boloUserId);
+                    trackDailyUser();
+                }).catch(err => console.warn('⚠️ Failed to register BOLO user:', err));
+                boloUserRef.onDisconnect().remove().catch(err => console.warn('⚠️ BOLO disconnect handler failed:', err));
+            }
+
+            function unregisterBoloUser() {
+                if (!isBoloUserActive || !boloUserRef) return;
+                boloUserRef.remove().then(() => { isBoloUserActive = false;
+                    console.log('✅ BOLO user unregistered'); }).catch(err => console.warn(
+                    '⚠️ Failed to unregister BOLO user:', err));
+            }
+
+            function listenForCombinedUserCount() {
+                let chatUsers = 0,
+                    boloUsers = 0;
+                db.ref('online').on('value', (snapshot) => {
+                    chatUsers = snapshot.numChildren ? snapshot.numChildren() : 0;
+                    updateCombinedCount();
+                }, (error) => console.warn('⚠️ Error listening to chat users:', error));
+                db.ref('bolo_online').on('value', (snapshot) => {
+                    boloUsers = snapshot.numChildren ? snapshot.numChildren() : 0;
+                    updateCombinedCount();
+                }, (error) => console.warn('⚠️ Error listening to BOLO users:', error));
+
+                function updateCombinedCount() {
+                    const total = chatUsers + boloUsers;
+                    if (liveUserCountHeader) liveUserCountHeader.textContent = total;
+                }
+            }
+
+            window.addEventListener('beforeunload', unregisterBoloUser);
+            window.addEventListener('pagehide', unregisterBoloUser);
+
+            // ============================================================
+            //  UTILITIES
+            // ============================================================
+            function formatTime(sec) {
+                if (isNaN(sec) || sec === undefined || sec < 0) return "0:00";
+                const m = Math.floor(sec / 60),
+                    s = Math.floor(sec % 60);
+                return `${m}:${s.toString().padStart(2, '0')}`;
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' } [m]));
+            }
+
+            function showToast(msg) {
+                const div = document.createElement('div');
+                div.style.cssText =
+                    'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#222;color:#ffcc00;padding:8px 20px;border-radius:30px;font-size:12px;z-index:99999;border:1px solid #ffcc00;max-width:90%;text-align:center;';
+                div.innerText = msg;
+                document.body.appendChild(div);
+                setTimeout(() => div.remove(), 3000);
+            }
+
+            // ============================================================
+            //  YOUTUBE IFrame API
+            // ============================================================
+            window.onYouTubeIframeAPIReady = function() {
+                ytApiReady = true;
+                player = new YT.Player('mainView', {
+                    height: '100%',
+                    width: '100%',
+                    playerVars: {
+                        autoplay: 1,
+                        modestbranding: 1,
+                        rel: 0,
+                        controls: 0,
+                        disablekb: 1,
+                        fs: 0,
+                        iv_load_policy: 3,
+                        playsinline: 1
+                    },
+                    events: {
+                        onReady: function(e) {
+                            console.log('Player ready – loading data...');
+                            loadFavoritesData();
+                            loadAllPlaylists();
+                            updateSongCounter();
+                            updateStreak();
+                            registerBoloUser();
+                            listenForCombinedUserCount();
+                            listenDailyUserCount();
+                            updateAdClickDisplay();
+
+                            // Start with first video
+                            if (autoFavorites.length && player) {
+                                currentFavIndex = 0;
+                                const first = autoFavorites[0];
+                                playVideo(first.id, first.title, first.thumbnail, 'row-favorites', 0);
+                            } else {
+                                for (const rowId in feedData) {
+                                    if (feedData[rowId] && feedData[rowId].length > 0) {
+                                        const first = feedData[rowId][0];
+                                        playVideo(first.id, first.title, first.thumbnail, rowId, 0);
+                                        break;
+                                    }
+                                }
+                            }
+                        },
+                        onStateChange: function(e) {
+                            if (e.data === YT.PlayerState.PLAYING) {
+                                if (appLoader) appLoader.classList.remove('hide-loader', 'paused-loader');
+                                playPauseBtn.innerHTML =
+                                    `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>`;
+                                resetControlTimer();
+                                startTimerUpdates();
+                            } else if (e.data === YT.PlayerState.PAUSED) {
+                                if (appLoader) appLoader.classList.add('paused-loader');
+                                playPauseBtn.innerHTML =
+                                    `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>`;
+                                stopTimerUpdates();
+                            } else if (e.data === YT.PlayerState.ENDED) {
+                                if (appLoader) appLoader.classList.add('hide-loader');
+                                playPauseBtn.innerHTML =
+                                    `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>`;
+                                stopTimerUpdates();
+                                if (timerEl) timerEl.innerText = '0:00 / 0:00';
+
+                                if (favRotationActive && currentPlaylistId === 'row-favorites' && autoFavorites
+                                    .length > 0) {
+                                    currentFavIndex = (currentFavIndex + 1) % autoFavorites.length;
+                                    const next = autoFavorites[currentFavIndex];
+                                    if (next) {
+                                        playVideo(next.id, next.title, next.thumbnail, 'row-favorites',
+                                            currentFavIndex);
+                                        return;
+                                    }
+                                }
+                                playNextInPlaylist();
+                            } else if (e.data === YT.PlayerState.BUFFERING) {
+                                if (appLoader) appLoader.classList.remove('hide-loader', 'paused-loader');
+                            }
+                        },
+                        onError: function(err) {
+                            console.error('Player error:', err);
+                            showToast('Playback error – skipping to next...');
+                            setTimeout(playNextInPlaylist, 1000);
+                        }
+                    }
+                });
+            };
+
+            // ============================================================
+            //  INIT
+            // ============================================================
+            document.addEventListener('DOMContentLoaded', function() {
+                containerEl.addEventListener('click', showControlsTemporarily);
+                containerEl.addEventListener('touchstart', showControlsTemporarily);
+                loadFavoritesData();
+                updateSongCounter();
+                updateStreak();
+                renderRecentlyPlayed();
+                renderAutoFavorites();
+                updateAdClickDisplay();
+                if (ytApiReady) loadAllPlaylists();
+
+                // Hide bottom banner initially, show after delay
+                if (bottomBanner) bottomBanner.classList.add('hidden');
+            });
+
+            // Expose for debugging
+            window.__resetAdCounter = function() {
+                songsSinceLastGateway = 0;
+                songsSinceLastInterstitial = 0;
+                console.log('Ad counters reset');
+            };
+            window.__forceGateway = function() {
+                songsSinceLastGateway = SONGS_BETWEEN_GATEWAY;
+                handleSongPlayed();
+            };
+            window.__forceInterstitial = function() {
+                songsSinceLastInterstitial = SONGS_BETWEEN_INTERSTITIAL;
+                handleSongPlayed();
+            };
+
+        })();
+    </script>
+</body>
+</html>
